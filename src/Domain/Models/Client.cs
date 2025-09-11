@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Domain.Enums;
+
+namespace Domain.Models
+{
+    public class Client
+    {
+        public Guid Id { get; set; }
+        public string? IIN { get; set; }
+        public KycStatus KycStatus { get; set; }
+        public string? FullName { get; set; }
+        public bool IsDeleted { get; set; }
+        public string? PhoneNumber { get; set; }
+        public ICollection<Account>? Accounts { get; set; } = new List<Account>();
+        public ICollection<AppUser>? AppUsers { get; set; } = new List<AppUser>();
+    }
+}
