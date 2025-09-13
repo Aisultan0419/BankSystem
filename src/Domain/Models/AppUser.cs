@@ -10,5 +10,6 @@ namespace Domain.Models
         public bool IsActive { get; set; }
         public VerificationStatus VerificationStatus { get; set; }
         public Client? Client { get; set; }
+        public ICollection<RefreshToken> refreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

@@ -61,5 +61,9 @@ namespace Infrastructure.Repositories
             AppUser? appUser = await _context.AppUsers.FirstOrDefaultAsync(user => user.Email == email);
             return appUser;
         }
+        public async Task SaveRefreshToken(RefreshToken refreshToken)
+        {
+            await _context.RefreshTokens.AddAsync(refreshToken);
+        }
     }
 }

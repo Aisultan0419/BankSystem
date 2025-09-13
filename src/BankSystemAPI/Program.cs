@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Infrastructure;
 using Application.Interfaces.Auth;
 using Domain.Configuration;
+using Infrastructure.JWT;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
@@ -21,10 +22,20 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.Configure<RefreshTokenOptions>(
+        builder.Configuration.GetSection("RefreshJwtOptions")
+    );
+builder.Services.Configure<JwtOptions>(options => 
+{
+    builder.Configuration.GetSection("JwtOptions").Bind(options);
+    options.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET")
+                                ?? throw new InvalidOperationException("Jwt secret not set");
+});
+
+builder.Services.AddDbContext<AppDbContext>(options =>  
     options.UseNpgsql("Host = localhost; Port = 5432; Database = BankSystem; Username = postgres; Password = 210624"));
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
+builder.Services.AddScoped<IRefreshTokenProvider, RefreshTokenProvider>();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
     {

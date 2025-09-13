@@ -20,11 +20,14 @@ namespace Application.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtProvider _jwtprovider;
-        public UserRegisterService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtProvider jwtprovider)
+        private readonly IRefreshTokenProvider _refreshTokenProvider;
+        public UserRegisterService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtProvider jwtprovider
+            , IRefreshTokenProvider refreshTokenProvider)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtprovider = jwtprovider;
+            _refreshTokenProvider = refreshTokenProvider;
         }
         public async Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO)
         {
@@ -130,11 +133,23 @@ namespace Application.Services
                 };
             }
             var token = _jwtprovider.GenerateToken(appUser);
+            var refreshToken = _refreshTokenProvider.GenerateRefreshToken(appUser.Id);
+            var hashed_one = new RefreshToken
+            {
+                Id = refreshToken.Id,
+                Token = _refreshTokenProvider.RefreshTokenHasher(refreshToken.Token),
+                Expires = refreshToken.Expires,
+                AppUser = appUser,
+                UserId = appUser.Id
+            }; 
+            await _userRepository.SaveRefreshToken(hashed_one);
+            await _userRepository.SaveChangesAsync();
             return new LoginStatusDTO
             {
                 VerificationStatus = VerificationStatus.Verified.ToString(),
                 Message = "User is logined successfully",
-                Token = token
+                Token = token,
+                RefreshToken = refreshToken
             };
         }
     }
