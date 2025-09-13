@@ -47,7 +47,7 @@ namespace BankSystemAPI.Controllers
             }
             return CreatedAtAction(null, result);
         }
-        [HttpGet]
+        [HttpPost("Login")]
         public async Task<ActionResult<LoginStatusDTO>> Login(string email, string password)
         {
             var result = await _userRegisterService.Login(email, password);
@@ -57,8 +57,25 @@ namespace BankSystemAPI.Controllers
             }
             else
             {
+                Response.Cookies.Append("refreshToken", result.RefreshToken, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddDays(5)
+                });
                 return Ok(result);
             }
+        }
+        [HttpPost("Refresh-Token")]
+        public async Task<ActionResult<LoginStatusDTO>> RefreshToken()
+        {
+            var result = await _userRegisterService.RefreshToken();
+            if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
+            {
+                return Unauthorized(result);
+            }
+            return Ok(result);
         }
     }
 }

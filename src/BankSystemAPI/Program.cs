@@ -22,6 +22,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<RefreshTokenOptions>(
         builder.Configuration.GetSection("RefreshJwtOptions")
     );
@@ -48,5 +49,4 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 app.UseAuthentication();
-app.UseAuthorization();
 app.Run();

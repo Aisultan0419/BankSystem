@@ -9,7 +9,7 @@ namespace Application.Interfaces.Auth
 {
     public interface IRefreshTokenProvider
     {
-        RefreshToken GenerateRefreshToken(Guid userId);
+        Task<RefreshToken> GenerateRefreshToken(Guid userId);
         string RefreshTokenHasher(string Token);
     }
 }

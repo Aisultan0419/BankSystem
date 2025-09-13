@@ -14,5 +14,6 @@ namespace Application.Interfaces.Services
         Task<bool> DeleteClient(string IIN);
         Task<RegistrationStatusDTO> RegisterAppUser(AppUserCreateDTO AppUserDTO);
         Task<LoginStatusDTO> Login(string email, string password);
+        Task<LoginStatusDTO> RefreshToken();
     }
 }

@@ -12,6 +12,9 @@ namespace Application.DTO
         public string VerificationStatus { get; set; } = "NotStarted";
         public string Message { get; set; } = "";
         public string Token { get; set; } = "";
-        public RefreshToken? RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = "";
+        public int ExpiresIn { get; set; }
+        public Guid UserId { get; set; }
+        public string? DeviceInfo { get; set; }
     }
 }

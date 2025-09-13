@@ -14,6 +14,6 @@ namespace Domain.Models
         public Guid UserId { get; set; }
         public DateTime RevokedAt { get; set; }
         public string? DeviceInfo { get; set; }
-        public AppUser? AppUser { get; set; }
+        public required AppUser AppUser { get; set; }
     }
 }

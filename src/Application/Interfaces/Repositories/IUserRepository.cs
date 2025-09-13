@@ -18,5 +18,7 @@ namespace Application.Interfaces.Repositories
         Task<bool> ExistsByEmailAsync(string email);
         Task<AppUser?> GetAppUserByEmail(string email);
         Task SaveRefreshToken(RefreshToken refreshToken);
+        Task<RefreshToken?> FindRefreshToken(string refreshToken);
+        Task<AppUser> GetAppUserAsync(Guid Id);
     }
 }

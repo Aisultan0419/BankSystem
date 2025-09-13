@@ -51,6 +51,11 @@ namespace Infrastructure.Repositories
 
             return affected;
         }
+        public async Task<AppUser> GetAppUserAsync(Guid Id)
+        {
+            var result = await _context.AppUsers.AsNoTracking().FirstOrDefaultAsync(appUser => appUser.Id == Id);
+            return result!;
+        }
         public async Task<bool> ExistsByEmailAsync(string email)
         {
             bool exists = await _context.AppUsers.AnyAsync(user => user.Email == email);
@@ -64,6 +69,11 @@ namespace Infrastructure.Repositories
         public async Task SaveRefreshToken(RefreshToken refreshToken)
         {
             await _context.RefreshTokens.AddAsync(refreshToken);
+        }
+        public async Task<RefreshToken?> FindRefreshToken(string refreshToken)
+        {
+            var result = await _context.RefreshTokens.AsNoTracking().Include(rt => rt.AppUser).FirstOrDefaultAsync(token => token.Token == refreshToken);
+            return result;
         }
     }
 }

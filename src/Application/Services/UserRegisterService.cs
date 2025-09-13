@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Application.DTO;
-using Application.Interfaces;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Domain.Configuration;
 using Domain.Enums;
 using Domain.Models;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 namespace Application.Services
 {
     public class UserRegisterService : IUserRegisterService
@@ -21,13 +17,21 @@ namespace Application.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtProvider _jwtprovider;
         private readonly IRefreshTokenProvider _refreshTokenProvider;
-        public UserRegisterService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtProvider jwtprovider
-            , IRefreshTokenProvider refreshTokenProvider)
+        private readonly IOptions<JwtOptions> _options;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public UserRegisterService(IUserRepository userRepository
+            ,IPasswordHasher passwordHasher
+            ,IJwtProvider jwtprovider
+            ,IRefreshTokenProvider refreshTokenProvider
+            ,IOptions<JwtOptions> options
+            ,IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _jwtprovider = jwtprovider;
             _refreshTokenProvider = refreshTokenProvider;
+            _options = options;
         }
         public async Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO)
         {
@@ -133,7 +137,7 @@ namespace Application.Services
                 };
             }
             var token = _jwtprovider.GenerateToken(appUser);
-            var refreshToken = _refreshTokenProvider.GenerateRefreshToken(appUser.Id);
+            var refreshToken = await _refreshTokenProvider.GenerateRefreshToken(appUser.Id);
             var hashed_one = new RefreshToken
             {
                 Id = refreshToken.Id,
@@ -149,7 +153,52 @@ namespace Application.Services
                 VerificationStatus = VerificationStatus.Verified.ToString(),
                 Message = "User is logined successfully",
                 Token = token,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken.Token,
+                ExpiresIn = _options.Value.ExpireMinutes,
+                UserId = appUser.Id,
+                DeviceInfo = refreshToken.DeviceInfo
+            };
+        }
+        public async Task<LoginStatusDTO> RefreshToken()
+        {
+            if (!(_httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)))
+            {
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = "No refresh token"
+                };
+            }
+
+            var ourRefreshToken = await _userRepository.FindRefreshToken(_refreshTokenProvider.RefreshTokenHasher(refreshToken));
+            if (ourRefreshToken == null)
+            {
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = "Invalid refresh token"
+                };
+            }
+            var appUser = ourRefreshToken.AppUser;
+            if (ourRefreshToken.Expires < DateTime.UtcNow)
+            {
+                ourRefreshToken.RevokedAt = DateTime.UtcNow;
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = "Expired refresh token"
+                };
+            }
+            var token = _jwtprovider.GenerateToken(appUser!);
+            return new LoginStatusDTO
+            {
+                VerificationStatus = VerificationStatus.Verified.ToString(),
+                Message = "User is relogined successfully",
+                Token = token,
+                RefreshToken = ourRefreshToken.Token,
+                ExpiresIn = _options.Value.ExpireMinutes,
+                UserId = appUser!.Id,
+                DeviceInfo = ourRefreshToken.DeviceInfo
             };
         }
     }
