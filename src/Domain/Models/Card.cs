@@ -3,12 +3,13 @@ namespace Domain.Models
 {
     public class Card
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; init; } = Guid.NewGuid();
         public Guid AccountId { get; set; }
-        public Account? Account { get; set; }
-        public string? Pan { get; set; }
-        public string? PanMasked { get; set; }
-        public string? ExpiryDate { get; set; }
+        public Account Account { get; set; } = null!;
+        public string? PanMasked { get; init; }
+        public string? ExpiryDate { get; init; }
         public CardStatus? Status { get; set; }
+        public Guid PanId { get; init; }          
+        public Pan Pan { get; set; } = null!;
     }
 }

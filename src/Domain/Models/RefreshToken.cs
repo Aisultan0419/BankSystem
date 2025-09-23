@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Domain.Models
 {
     public class RefreshToken
     {
-        public Guid Id { get; set; }
-        public required string Token { get; set; }
-        public DateTime Expires { get; set; }
-        public Guid UserId { get; set; }
+        public Guid Id { get; init; }
+        public required string Token { get; init; }
+        public DateTime Expires { get; init; } 
+        public Guid UserId { get; init; }  
         public DateTime RevokedAt { get; set; }
         public string? DeviceInfo { get; set; }
-        public required AppUser AppUser { get; set; }
+        public required AppUser AppUser { get; init; }
     }
 }

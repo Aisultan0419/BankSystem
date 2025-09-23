@@ -12,7 +12,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Application.Interfaces.Services;
-namespace Application.Services
+namespace Application.Services.AuthServices
 {
     public class AuthService : IAuthService
     {
@@ -21,21 +21,27 @@ namespace Application.Services
         private readonly ITokenService _tokenService;
         private readonly IOptions<JwtOptions> _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAppUserRepository _appUserRepository;
+        private readonly IAuthRepository _authRepository;
         public AuthService(IUserRepository userRepository
             , IPasswordHasher passwordHasher
             , IOptions<JwtOptions> options
             , IHttpContextAccessor httpContextAccessor
-            , ITokenService tokenService)
+            , ITokenService tokenService
+            , IAppUserRepository appUserRepository
+            , IAuthRepository authRepository)
         {
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _options = options;
             _tokenService = tokenService;
+            _appUserRepository = appUserRepository;
+            _authRepository = authRepository;
         }
         public async Task<LoginStatusDTO> Login(string email, string password)
         {
-            var appUser = await _userRepository.GetAppUserByEmail(email);
+            var appUser = await _appUserRepository.GetAppUserByEmail(email);
 
             if (appUser == null)
             {
@@ -65,7 +71,7 @@ namespace Application.Services
                 AppUser = appUser,
                 UserId = appUser.Id
             };
-            await _userRepository.SaveRefreshToken(hashed_one);
+            await _authRepository.SaveRefreshToken(hashed_one);
             await _userRepository.SaveChangesAsync();
             return new LoginStatusDTO
             {
@@ -80,7 +86,7 @@ namespace Application.Services
         }
         public async Task<LoginStatusDTO> RefreshToken()
         {
-            if (!(_httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken)))
+            if (!_httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
             {
                 return new LoginStatusDTO
                 {
@@ -89,7 +95,7 @@ namespace Application.Services
                 };
             }
             var hashedRefreshToken = _tokenService.HashRefreshToken(refreshToken);
-            var storedRefreshToken = await _userRepository.FindRefreshToken(hashedRefreshToken);
+            var storedRefreshToken = await _authRepository.FindRefreshToken(hashedRefreshToken);
             if (storedRefreshToken == null)
             {
                 return new LoginStatusDTO

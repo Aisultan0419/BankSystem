@@ -7,9 +7,10 @@ using Domain.Models;
 
 namespace Application.Interfaces.Repositories
 {
-    public interface IUserRepository
+    public interface IAccountRepository
     {
-        Task SaveChangesAsync();
-        Task<string?> GetOrderNumber();
+        Task AddEncyptedPan(Pan pan);
+        Task AddCard(Card card);
+        Task AddAccount(Account account);
     }
 }

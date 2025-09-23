@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Models;
 
-namespace Application.Interfaces.Repositories
+namespace Application.Interfaces.Services
 {
-    public interface IUserRepository
+    public interface ICardService
     {
-        Task SaveChangesAsync();
-        Task<string?> GetOrderNumber();
+        Task<Card> CreateCard(Client client);
     }
 }

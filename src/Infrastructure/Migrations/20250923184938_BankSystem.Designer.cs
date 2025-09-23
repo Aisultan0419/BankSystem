@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250913113452_BankSystem")]
+    [Migration("20250923184938_BankSystem")]
     partial class BankSystem
     {
         /// <inheritdoc />
@@ -37,10 +37,8 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Currency")
-                        .HasColumnType("text");
-
                     b.Property<string>("Iban")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -56,7 +54,7 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ClientId")
+                    b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Email")
@@ -67,6 +65,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("VerificationStatus")
@@ -91,8 +90,8 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ExpiryDate")
                         .HasColumnType("text");
 
-                    b.Property<string>("Pan")
-                        .HasColumnType("text");
+                    b.Property<Guid>("PanId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("PanMasked")
                         .HasColumnType("text");
@@ -103,6 +102,9 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("PanId")
+                        .IsUnique();
 
                     b.ToTable("Cards");
                 });
@@ -117,6 +119,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("IIN")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("IsDeleted")
@@ -133,13 +136,39 @@ namespace Infrastructure.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("Domain.Models.Pan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CardId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("CipherText")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("Nonce")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("Tag")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pans");
+                });
+
             modelBuilder.Entity("Domain.Models.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("AppUserId")
+                    b.Property<Guid>("AppUserId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("DeviceInfo")
@@ -181,7 +210,8 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.Client", "Client")
                         .WithMany("AppUsers")
                         .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Client");
                 });
@@ -194,7 +224,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Domain.Models.Pan", "Pan")
+                        .WithOne("Card")
+                        .HasForeignKey("Domain.Models.Card", "PanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Account");
+
+                    b.Navigation("Pan");
                 });
 
             modelBuilder.Entity("Domain.Models.RefreshToken", b =>
@@ -202,7 +240,8 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.AppUser", "AppUser")
                         .WithMany("refreshTokens")
                         .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("AppUser");
                 });
@@ -222,6 +261,12 @@ namespace Infrastructure.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("AppUsers");
+                });
+
+            modelBuilder.Entity("Domain.Models.Pan", b =>
+                {
+                    b.Navigation("Card")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -9,13 +9,13 @@ namespace Domain.Models
 {
     public class Client
     {
-        public Guid Id { get; set; }
-        public string? IIN { get; set; }
+        public Guid Id { get; init; }
+        public required string IIN { get; init; }
         public KycStatus KycStatus { get; set; }
         public string? FullName { get; set; }
         public bool IsDeleted { get; set; }
         public string? PhoneNumber { get; set; }
-        public ICollection<Account>? Accounts { get; set; } = new List<Account>();
-        public ICollection<AppUser>? AppUsers { get; set; } = new List<AppUser>();
+        public ICollection<Account> Accounts { get; } = new List<Account>();
+        public ICollection<AppUser> AppUsers { get; } = new List<AppUser>();
     }
 }

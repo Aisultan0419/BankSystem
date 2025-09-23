@@ -4,21 +4,28 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Enums;
 using Domain.Models;
-namespace Application.Services
+namespace Application.Services.AppUserServices
 {
     public class AppUserService : IAppUserService
     {
        
         private readonly IUserRepository _userRepository;
+        private readonly IAppUserRepository _appUserRepository;
         private readonly IPasswordHasher _passwordHasher;
-        public AppUserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
+        private readonly IClientRepository _clientRepository;
+        public AppUserService(IUserRepository userRepository
+            ,IPasswordHasher passwordHasher
+            ,IAppUserRepository appUserRepository
+            ,IClientRepository clientRepository)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _appUserRepository = appUserRepository;
+            _clientRepository = clientRepository;
         }
         public async Task<RegistrationStatusDTO> RegisterAppUser(AppUserCreateDTO AppUserDTO)
         {
-            var client = await _userRepository.FindByIINAsync(AppUserDTO.IIN);
+            var client = await _clientRepository.FindByIINAsync(AppUserDTO.IIN);
             if (client == null)
             {
                 return new RegistrationStatusDTO
@@ -37,7 +44,7 @@ namespace Application.Services
                 Client = client,
                 IsActive = false
             };
-            var appuserexists = await _userRepository.ExistsByEmailAsync(appUser.Email);
+            var appuserexists = await _appUserRepository.ExistsByEmailAsync(appUser.Email);
             if (appuserexists)
             {
                 return new RegistrationStatusDTO
@@ -50,7 +57,7 @@ namespace Application.Services
             appUser.VerificationStatus = VerificationStatus.Verified;
             appUser.IsActive = true;
 
-            await _userRepository.SaveDataAppUserAsync(appUser);
+            await _appUserRepository.SaveDataAppUserAsync(appUser);
 
             await _userRepository.SaveChangesAsync();
             

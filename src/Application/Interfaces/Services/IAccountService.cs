@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Models;
 
-namespace Application.Interfaces.Repositories
+namespace Application.Interfaces.Services
 {
-    public interface IUserRepository
+    public interface IAccountService
     {
-        Task SaveChangesAsync();
-        Task<string?> GetOrderNumber();
+        Task CreateAccount(Client client);
     }
 }

@@ -5,8 +5,8 @@ namespace Application.DTO
 {
     public class ClientCreateDTO
     {
-        public string? IIN { get; set; }
-        public string? FullName { get; set; }
+        public required string IIN { get; set; } 
+        public required string FullName { get; set; }
         public string? PhoneNumber { get; set; }
     }
 }

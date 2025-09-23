@@ -4,14 +4,20 @@ using Application.Interfaces.Services;
 using Domain.Enums;
 using Domain.Models;
 
-namespace Application.Services
+namespace Application.Services.ClientServices
 {
     public class ClientService : IClientService
     {
         private readonly IUserRepository _userRepository;
-        public ClientService(IUserRepository userRepository)
+        private readonly IClientRepository _clientRepository;
+        private readonly IAccountService _accountService;
+        public ClientService(IUserRepository userRepository
+            ,IClientRepository clientRepository
+            ,IAccountService accountService)
         {
             _userRepository = userRepository;
+            _clientRepository = clientRepository;
+            _accountService = accountService;
         }
         public async Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO)
         {
@@ -24,8 +30,8 @@ namespace Application.Services
                 IsDeleted = false,
                 PhoneNumber = ClientDTO.PhoneNumber
             };
-
-            var exists = await _userRepository.ExistsByIINAsync(client.IIN!);
+            await _accountService.CreateAccount(client);
+            var exists = await _clientRepository.ExistsByIINAsync(client.IIN!);
 
             if (exists) return new RegistrationStatusDTO
             {
@@ -33,7 +39,7 @@ namespace Application.Services
                 Message = "Client data is already in the system!"
             };
             client.KycStatus = KycStatus.Verified;
-            await _userRepository.SaveDataClientAsync(client);
+            await _clientRepository.SaveDataClientAsync(client);
 
             await _userRepository.SaveChangesAsync();
 
@@ -45,7 +51,7 @@ namespace Application.Services
         }
         public async Task<bool> DeleteClient(string IIN)
         {
-            var affected = await _userRepository.DeleteAsync(IIN);
+            var affected = await _clientRepository.DeleteAsync(IIN);
             return affected > 0;
         }
     }

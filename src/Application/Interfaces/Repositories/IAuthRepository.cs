@@ -7,9 +7,9 @@ using Domain.Models;
 
 namespace Application.Interfaces.Repositories
 {
-    public interface IUserRepository
+    public interface IAuthRepository
     {
-        Task SaveChangesAsync();
-        Task<string?> GetOrderNumber();
+        Task SaveRefreshToken(RefreshToken refreshToken);
+        Task<RefreshToken?> FindRefreshToken(string refreshToken);
     }
 }

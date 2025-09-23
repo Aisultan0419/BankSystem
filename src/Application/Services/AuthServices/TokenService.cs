@@ -5,7 +5,7 @@ using Domain.Configuration;
 using Domain.Models;
 using Microsoft.Extensions.Options;
 
-namespace Application.Services
+namespace Application.Services.AuthServices
 {
     public class TokenService : ITokenService
     {

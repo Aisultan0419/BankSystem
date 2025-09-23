@@ -2,7 +2,6 @@
 using Application.Interfaces.Services;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace BankSystemAPI.Controllers
 {

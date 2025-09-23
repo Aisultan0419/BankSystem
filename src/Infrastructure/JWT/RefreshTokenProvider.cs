@@ -18,15 +18,18 @@ namespace Infrastructure.JWT
         private readonly RefreshTokenOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
+        private readonly IAppUserRepository _appUserRepository;
         public RefreshTokenProvider(IConfiguration configuration
             ,IOptions<RefreshTokenOptions> options
             ,IHttpContextAccessor httpContextAccessor
-            , IUserRepository userRepository)
+            ,IUserRepository userRepository
+            ,IAppUserRepository appUserRepository)
         {
             _configuration = configuration;
             _options = options.Value;
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
+            _appUserRepository = appUserRepository;
         }
         public async Task<RefreshToken> GenerateRefreshToken(Guid userId)
         {
@@ -40,7 +43,7 @@ namespace Infrastructure.JWT
 
             var device_info = $"{client.UA.Family} on {client.OS.Family}";
 
-            var appUser = await _userRepository.GetAppUserAsync(userId);
+            var appUser = await _appUserRepository.GetAppUserAsync(userId);
 
             var refreshToken = new RefreshToken
             {
