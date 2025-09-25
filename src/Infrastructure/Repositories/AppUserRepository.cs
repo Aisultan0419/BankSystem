@@ -24,7 +24,9 @@ namespace Infrastructure.Repositories
         }
         public async Task<AppUser> GetAppUserAsync(Guid Id)
         {
-            var result = await _context.AppUsers.AsNoTracking().FirstOrDefaultAsync(appUser => appUser.Id == Id);
+            var result = await _context.AppUsers.AsNoTracking()
+                .Include(u => u.Client)
+                .FirstOrDefaultAsync(appUser => appUser.Id == Id);
             return result!;
         }
         public async Task<bool> ExistsByEmailAsync(string email)

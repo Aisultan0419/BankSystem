@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTO;
 using Domain.Models;
 
 namespace Application.Interfaces.Repositories
@@ -12,5 +13,6 @@ namespace Application.Interfaces.Repositories
         Task AddEncyptedPan(Pan pan);
         Task AddCard(Card card);
         Task AddAccount(Account account);
+        Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId);
     }
 }

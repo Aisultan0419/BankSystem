@@ -28,9 +28,12 @@ namespace Application.Services.AccountServices
             {
                 Id = Guid.NewGuid(),
                 Client = client,
+                ClientId = client.Id,
                 Iban = iban,
             };
             var card = await _cardService.CreateCard(client);
+            card.Account = account;
+            card.AccountId = account.Id;
             account.Cards.Add(card);
             await _accountRepository.AddAccount(account);
             await _userRepository.SaveChangesAsync();

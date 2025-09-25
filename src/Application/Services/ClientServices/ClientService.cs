@@ -30,7 +30,7 @@ namespace Application.Services.ClientServices
                 IsDeleted = false,
                 PhoneNumber = ClientDTO.PhoneNumber
             };
-            await _accountService.CreateAccount(client);
+            
             var exists = await _clientRepository.ExistsByIINAsync(client.IIN!);
 
             if (exists) return new RegistrationStatusDTO
@@ -42,6 +42,7 @@ namespace Application.Services.ClientServices
             await _clientRepository.SaveDataClientAsync(client);
 
             await _userRepository.SaveChangesAsync();
+            await _accountService.CreateAccount(client);
 
             return new RegistrationStatusDTO()
             {

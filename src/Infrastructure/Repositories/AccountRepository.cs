@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTO;
 using Application.Interfaces.Repositories;
 using BankSystem;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -28,6 +30,20 @@ namespace Infrastructure.Repositories
         public async Task AddAccount(Account account)
         {
             await _context.Accounts.AddAsync(account);
+        }
+        public async Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId)
+        {
+            var list = await _context.Accounts
+            .AsNoTracking()
+            .Where(a => a.ClientId == clientId)
+            .SelectMany(a => a.Cards.Select(card => new GetCardDTO
+            {
+                PanMasked = card.PanMasked,
+                Balance = a.Balance,
+                Status = card.Status
+            }))
+            .ToListAsync();
+            return list;
         }
     }
 }
