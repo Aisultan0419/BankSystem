@@ -18,11 +18,25 @@ namespace BankSystem
         {
             modelBuilder.Entity<AppUser>().HasMany(a => a.refreshTokens).WithOne(b => b.AppUser).OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Client>().HasMany(b => b.AppUsers).WithOne(a => a.Client).OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Client>().HasMany(a => a.Accounts).WithOne(b => b.Client).OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Card>().HasOne(a => a.Account).WithMany(c => c.Cards).OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Card>().HasOne(p => p.Pan).WithOne(a => a.Card).OnDelete(DeleteBehavior.Restrict)
-                .HasForeignKey<Card>(k => k.PanId);
-            
+            modelBuilder.Entity<Client>()
+            .HasMany(c => c.Accounts)
+            .WithOne(a => a.Client)
+            .HasForeignKey(a => a.ClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Account>()
+            .HasMany(a => a.Cards)
+            .WithOne(c => c.Account)
+            .HasForeignKey(c => c.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Card>()
+            .HasOne(c => c.Pan)
+            .WithOne(p => p.Card)
+            .HasForeignKey<Pan>(p => p.CardId)  
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Pan>().HasOne(p => p.Card).WithOne(c => c.Pan).HasForeignKey<Pan>(p => p.CardId);
+
+
         }
     }
 }

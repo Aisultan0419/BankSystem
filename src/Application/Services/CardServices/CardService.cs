@@ -21,7 +21,7 @@ namespace Application.Services.CardServices
             _accountRepository = accountRepository;
             _userRepository = userRepository;
         }
-        public async Task<Card> CreateCard(Client client)
+        public Card CreateCard(Client client)
         {
             var pan = _panService.CreatePan(client);
             var encrypted = _panEncryptor.Encrypt(pan);
@@ -32,7 +32,7 @@ namespace Application.Services.CardServices
                 Nonce = encrypted.Nonce,
                 Tag = encrypted.Tag
             };
-            await _accountRepository.AddEncyptedPan(encypted_pan);
+            
             var card = new Card
             {
                 Id = Guid.NewGuid(),
@@ -41,7 +41,7 @@ namespace Application.Services.CardServices
                 PanMasked = new string('*', 12) + pan[^4..],
                 Pan = encypted_pan
             };
-          
+            encypted_pan.Card = card;
             return card;
         }
 

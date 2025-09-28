@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250923184938_BankSystem")]
+    [Migration("20250927205142_BankSystem")]
     partial class BankSystem
     {
         /// <inheritdoc />
@@ -90,9 +90,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("ExpiryDate")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("PanId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("PanMasked")
                         .HasColumnType("text");
 
@@ -102,9 +99,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("PanId")
-                        .IsUnique();
 
                     b.ToTable("Cards");
                 });
@@ -158,6 +152,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bytea");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CardId")
+                        .IsUnique();
 
                     b.ToTable("Pans");
                 });
@@ -221,18 +218,21 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Models.Account", "Account")
                         .WithMany("Cards")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Models.Pan", "Pan")
-                        .WithOne("Card")
-                        .HasForeignKey("Domain.Models.Card", "PanId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Account");
+                });
 
-                    b.Navigation("Pan");
+            modelBuilder.Entity("Domain.Models.Pan", b =>
+                {
+                    b.HasOne("Domain.Models.Card", "Card")
+                        .WithOne("Pan")
+                        .HasForeignKey("Domain.Models.Pan", "CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Card");
                 });
 
             modelBuilder.Entity("Domain.Models.RefreshToken", b =>
@@ -256,17 +256,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("refreshTokens");
                 });
 
+            modelBuilder.Entity("Domain.Models.Card", b =>
+                {
+                    b.Navigation("Pan")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Models.Client", b =>
                 {
                     b.Navigation("Accounts");
 
                     b.Navigation("AppUsers");
-                });
-
-            modelBuilder.Entity("Domain.Models.Pan", b =>
-                {
-                    b.Navigation("Card")
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

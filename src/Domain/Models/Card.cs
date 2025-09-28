@@ -8,8 +8,7 @@ namespace Domain.Models
         public Account Account { get; set; } = null!;
         public string? PanMasked { get; init; }
         public string? ExpiryDate { get; init; }
-        public CardStatus? Status { get; set; }
-        public Guid PanId { get; init; }          
+        public CardStatus? Status { get; set; }       
         public Pan Pan { get; set; } = null!;
     }
 }

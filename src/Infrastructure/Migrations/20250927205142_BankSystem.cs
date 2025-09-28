@@ -28,21 +28,6 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Pans",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CardId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CipherText = table.Column<byte[]>(type: "bytea", nullable: false),
-                    Nonce = table.Column<byte[]>(type: "bytea", nullable: false),
-                    Tag = table.Column<byte[]>(type: "bytea", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Pans", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -92,8 +77,7 @@ namespace Infrastructure.Migrations
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     PanMasked = table.Column<string>(type: "text", nullable: true),
                     ExpiryDate = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: true),
-                    PanId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Status = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -103,13 +87,7 @@ namespace Infrastructure.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Cards_Pans_PanId",
-                        column: x => x.PanId,
-                        principalTable: "Pans",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -135,6 +113,27 @@ namespace Infrastructure.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Pans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CardId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CipherText = table.Column<byte[]>(type: "bytea", nullable: false),
+                    Nonce = table.Column<byte[]>(type: "bytea", nullable: false),
+                    Tag = table.Column<byte[]>(type: "bytea", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Pans_Cards_CardId",
+                        column: x => x.CardId,
+                        principalTable: "Cards",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Accounts_ClientId",
                 table: "Accounts",
@@ -151,9 +150,9 @@ namespace Infrastructure.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Cards_PanId",
-                table: "Cards",
-                column: "PanId",
+                name: "IX_Pans_CardId",
+                table: "Pans",
+                column: "CardId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -166,19 +165,19 @@ namespace Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Cards");
+                name: "Pans");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
-                name: "Accounts");
-
-            migrationBuilder.DropTable(
-                name: "Pans");
+                name: "Cards");
 
             migrationBuilder.DropTable(
                 name: "AppUsers");
+
+            migrationBuilder.DropTable(
+                name: "Accounts");
 
             migrationBuilder.DropTable(
                 name: "Clients");

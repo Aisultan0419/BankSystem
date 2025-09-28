@@ -13,9 +13,11 @@ namespace BankSystemAPI.Controllers
     public class CardController : ControllerBase
     {
         private readonly IGetCardService _getCardService;
-        public CardController(IGetCardService getCardService)
+        private readonly IGetRequisitesOfCardService _getRequisitesOfCardService;
+        public CardController(IGetCardService getCardService, IGetRequisitesOfCardService getRequisitesOfCard)
         {
             _getCardService = getCardService;
+            _getRequisitesOfCardService = getRequisitesOfCard;
         }
         [Authorize]
         [HttpGet("getAllCards")]
@@ -35,6 +37,23 @@ namespace BankSystemAPI.Controllers
                 return Ok(cards);
             }
             return NotFound();
+        }
+        [Authorize]
+        [HttpGet("getRequisitesCards")]
+        public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] string last_numbers)
+        {
+            if (User?.Identity == null || !User.Identity.IsAuthenticated)
+                return Unauthorized("No token or not authenticated");
+
+            var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var card = await _getRequisitesOfCardService.GetRequisitesOfCard(appUserIdClaim ?? throw new Exception("AppUser id is not here"), last_numbers);
+            if (card == null)
+            {
+                return NotFound("Card was not found");
+            }
+            return Ok(card);
         }
     }
     

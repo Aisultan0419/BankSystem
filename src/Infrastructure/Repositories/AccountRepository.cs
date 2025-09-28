@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.DTO;
+﻿using Application.DTO;
 using Application.Interfaces.Repositories;
 using BankSystem;
 using Domain.Models;
@@ -44,6 +39,20 @@ namespace Infrastructure.Repositories
             }))
             .ToListAsync();
             return list;
+        }
+        public async Task<Card> GetRequisitesDTOAsync(Guid clientId, string last_numbers)
+        {
+            var result = await _context.Clients
+                .AsNoTracking()
+                .Include(ac => ac.Accounts)
+                    .ThenInclude(ca => ca.Cards)
+                        .ThenInclude(ka => ka.Pan)
+                .Where(cl => cl.Id == clientId)
+                .SelectMany(a => a.Accounts)
+                .SelectMany(c => c.Cards)
+                .FirstOrDefaultAsync(cr => cr.PanMasked!.EndsWith(last_numbers));
+
+            return result ?? throw new Exception("Card is null");
         }
     }
 }

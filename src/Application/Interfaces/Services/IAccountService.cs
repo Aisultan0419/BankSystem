@@ -9,6 +9,6 @@ namespace Application.Interfaces.Services
 {
     public interface IAccountService
     {
-        Task CreateAccount(Client client);
+        Task<Account> CreateAccount(Client client);
     }
 }

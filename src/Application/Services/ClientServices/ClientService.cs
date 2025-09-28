@@ -11,13 +11,16 @@ namespace Application.Services.ClientServices
         private readonly IUserRepository _userRepository;
         private readonly IClientRepository _clientRepository;
         private readonly IAccountService _accountService;
+        private readonly IAccountRepository _accountRepository;
         public ClientService(IUserRepository userRepository
             ,IClientRepository clientRepository
-            ,IAccountService accountService)
+            ,IAccountService accountService
+            ,IAccountRepository accountRepository)
         {
             _userRepository = userRepository;
             _clientRepository = clientRepository;
             _accountService = accountService;
+            _accountRepository = accountRepository;
         }
         public async Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO)
         {
@@ -41,9 +44,9 @@ namespace Application.Services.ClientServices
             client.KycStatus = KycStatus.Verified;
             await _clientRepository.SaveDataClientAsync(client);
 
+            var account = await _accountService.CreateAccount(client);
+            await _accountRepository.AddAccount(account);
             await _userRepository.SaveChangesAsync();
-            await _accountService.CreateAccount(client);
-
             return new RegistrationStatusDTO()
             {
                 KycStatus = KycStatus.Verified.ToString(),

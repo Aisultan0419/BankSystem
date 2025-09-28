@@ -21,7 +21,7 @@ namespace Application.Services.AccountServices
             _cardService = cardService;
         }
 
-        public async Task CreateAccount(Client client)
+        public async Task<Account> CreateAccount(Client client)
         {
             var iban = await _ibanService.GetIban(AccountType.Current, client.Id);
             var account = new Account
@@ -31,12 +31,11 @@ namespace Application.Services.AccountServices
                 ClientId = client.Id,
                 Iban = iban,
             };
-            var card = await _cardService.CreateCard(client);
+            var card = _cardService.CreateCard(client);
             card.Account = account;
             card.AccountId = account.Id;
             account.Cards.Add(card);
-            await _accountRepository.AddAccount(account);
-            await _userRepository.SaveChangesAsync();
+            return account;
         }
     }
 }
