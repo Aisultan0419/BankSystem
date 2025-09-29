@@ -35,7 +35,7 @@ namespace Infrastructure.Repositories
             {
                 PanMasked = card.PanMasked,
                 Balance = a.Balance,
-                Status = card.Status
+                Status = card.Status.ToString(),
             }))
             .ToListAsync();
             return list;
@@ -58,6 +58,11 @@ namespace Infrastructure.Repositories
                 .FirstOrDefaultAsync(cr => cr.PanMasked!.EndsWith(last_numbers));
 
             return result ?? throw new Exception("Card is null");
+        }
+        public async Task<Account> GetAccountByIban(string iban)
+        {
+            var account = await _context.Accounts.Include(c => c.Client).FirstOrDefaultAsync(a => a.Iban == iban);
+            return account ?? throw new ArgumentNullException();
         }
     }
 }

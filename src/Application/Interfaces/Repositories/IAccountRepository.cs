@@ -16,5 +16,6 @@ namespace Application.Interfaces.Repositories
         Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId);
         Task<Card> GetRequisitesDTOAsync(Guid clientId, string last_numbers);
         Task<Account> GetAccountById(Guid accountId);
+        Task<Account> GetAccountByIban(string iban);
     }
 }

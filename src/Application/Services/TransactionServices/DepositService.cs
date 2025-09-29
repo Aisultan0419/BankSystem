@@ -72,7 +72,7 @@ namespace Application.Services.TransactionServices
                 {
                     account.Deposit(amount);
                     account.DepositedLastDay += amount;
-
+                    account.LastDepositDateKz = kazToday;   
                     var transaction = new Transaction
                     {
                         Id = Guid.NewGuid(),
