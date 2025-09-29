@@ -15,5 +15,6 @@ namespace Application.Interfaces.Repositories
         Task AddAccount(Account account);
         Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId);
         Task<Card> GetRequisitesDTOAsync(Guid clientId, string last_numbers);
+        Task<Account> GetAccountById(Guid accountId);
     }
 }

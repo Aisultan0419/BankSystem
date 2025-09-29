@@ -1,8 +1,8 @@
 ﻿namespace Application.Interfaces.Auth
 {
-    public interface IPasswordHasher
+    public interface IHasher
     {
-        string Generate(string password);
-        bool Verify(string password, string hashedPassword);
+        string Generate(string input);
+        bool Verify(string input, string hashedInput);
     }
 }

@@ -8,6 +8,12 @@
         public string Iban { get; set; } = null!;
         public decimal Balance { get; private set; } = 0;
         public string? Currency { get; } = "KZT";
+        public DateOnly LastDepositDateKz { get; set; }
+        public decimal? DepositedLastDay { get; set; }
         public ICollection<Card> Cards { get; set; } = new List<Card>();
+        public void Deposit(decimal amount)
+        {
+            Balance += amount;
+        }
     }
 }

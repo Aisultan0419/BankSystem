@@ -17,14 +17,16 @@ namespace Application.Services.AuthServices
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IHasher _Hasher;
         private readonly ITokenService _tokenService;
         private readonly IOptions<JwtOptions> _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAppUserRepository _appUserRepository;
         private readonly IAuthRepository _authRepository;
+        public DateTime kazTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"));
+        public DateTime utcNow = DateTime.UtcNow;
         public AuthService(IUserRepository userRepository
-            , IPasswordHasher passwordHasher
+            , IHasher Hasher
             , IOptions<JwtOptions> options
             , IHttpContextAccessor httpContextAccessor
             , ITokenService tokenService
@@ -33,16 +35,15 @@ namespace Application.Services.AuthServices
         {
             _httpContextAccessor = httpContextAccessor;
             _userRepository = userRepository;
-            _passwordHasher = passwordHasher;
+            _Hasher = Hasher;
             _options = options;
             _tokenService = tokenService;
             _appUserRepository = appUserRepository;
             _authRepository = authRepository;
         }
-        public async Task<LoginStatusDTO> Login(string email, string password)
+        public async Task<LoginStatusDTO> LoginPin(string email, string pinCode)
         {
             var appUser = await _appUserRepository.GetAppUserByEmail(email);
-
             if (appUser == null)
             {
                 return new LoginStatusDTO
@@ -51,16 +52,100 @@ namespace Application.Services.AuthServices
                     Message = "There is no such app user, please register"
                 };
             }
-
-            var result_verification = _passwordHasher.Verify(password, appUser.PasswordHash!);
+            if (appUser.BlockedUntil != null && appUser.BlockedUntil > utcNow)
+            {
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = $"User is blocked until {TimeZoneInfo.ConvertTimeFromUtc(appUser.BlockedUntil.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"))}"
+                };
+            }
+            if (appUser.CountOfLoginAttempts > 3)
+            {
+                var utcNow = DateTime.UtcNow;
+                appUser.BlockedUntil = utcNow.AddHours(3);
+                await _userRepository.SaveChangesAsync();
+            }
+            var result_verification = _Hasher.Verify(pinCode, appUser.HashedPinCode!);
             if (result_verification == false)
             {
+                appUser.CountOfLoginAttempts++;
+                await _userRepository.SaveChangesAsync();
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = "Incorrect pin code"
+                };
+            }
+            appUser.BlockedUntil = null;
+            appUser.CountOfLoginAttempts = 0;
+            appUser.BlockedUntilPassword = null;
+            appUser.CountOfLoginViaPasswordAttempts = 0;
+            var token = _tokenService.GenerateJwt(appUser);
+            var refreshToken = await _tokenService.CreateRefreshTokenAsync(appUser.Id);
+            var hashed_one = new RefreshToken
+            {
+                Id = refreshToken.Id,
+                Token = _tokenService.HashRefreshToken(refreshToken.Token),
+                Expires = refreshToken.Expires,
+                AppUser = appUser,
+                UserId = appUser.Id
+            };
+            await _authRepository.SaveRefreshToken(hashed_one);
+            await _userRepository.SaveChangesAsync();
+            return new LoginStatusDTO
+            {
+                VerificationStatus = VerificationStatus.Verified.ToString(),
+                Message = "User is logined successfully",
+                Token = token,
+                RefreshToken = refreshToken.Token,
+                ExpiresIn = _options.Value.ExpireMinutes,
+                UserId = appUser.Id,
+                DeviceInfo = refreshToken.DeviceInfo
+            };
+        }
+        public async Task<LoginStatusDTO> LoginPassword(string email, string password)
+        {
+            var appUser = await _appUserRepository.GetAppUserByEmail(email);
+            if (appUser == null)
+            {
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = "There is no such app user, please register"
+                };
+            }
+            if (appUser.BlockedUntilPassword != null && appUser.BlockedUntilPassword > utcNow)
+            {
+                return new LoginStatusDTO
+                {
+                    VerificationStatus = VerificationStatus.Rejected.ToString(),
+                    Message = $"User is blocked until {TimeZoneInfo.ConvertTimeFromUtc(appUser.BlockedUntilPassword.Value,
+                                TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"))}"
+                };
+            }
+            if (appUser.CountOfLoginViaPasswordAttempts > 3)
+            {
+                var utcNow = DateTime.UtcNow;
+                appUser.BlockedUntilPassword = utcNow.AddHours(3);
+                await _userRepository.SaveChangesAsync();
+            }
+            var result_verification = _Hasher.Verify(password, appUser.PasswordHash!);
+            if (result_verification == false)
+            {
+                appUser.CountOfLoginViaPasswordAttempts++;
+                await _userRepository.SaveChangesAsync();
                 return new LoginStatusDTO
                 {
                     VerificationStatus = VerificationStatus.Rejected.ToString(),
                     Message = "Incorrect password"
                 };
             }
+            appUser.BlockedUntil = null;
+            appUser.CountOfLoginAttempts = 0;
+            appUser.BlockedUntilPassword = null;
+            appUser.CountOfLoginViaPasswordAttempts = 0;
             var token = _tokenService.GenerateJwt(appUser);
             var refreshToken = await _tokenService.CreateRefreshTokenAsync(appUser.Id);
             var hashed_one = new RefreshToken
@@ -105,9 +190,9 @@ namespace Application.Services.AuthServices
                 };
             }
             var appUser = storedRefreshToken.AppUser;
-            if (storedRefreshToken.Expires < DateTime.UtcNow)
+            if (storedRefreshToken.Expires < utcNow)
             {
-                storedRefreshToken.RevokedAt = DateTime.UtcNow;
+                storedRefreshToken.RevokedAt = utcNow;
                 return new LoginStatusDTO
                 {
                     VerificationStatus = VerificationStatus.Rejected.ToString(),

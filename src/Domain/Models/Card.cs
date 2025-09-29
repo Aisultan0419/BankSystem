@@ -10,5 +10,7 @@ namespace Domain.Models
         public string? ExpiryDate { get; init; }
         public CardStatus? Status { get; set; }       
         public Pan Pan { get; set; } = null!;
+        public string? PinCode { get; set; }
+        public int CountOfPinAttempts { get; set; } = 0;
     }
 }

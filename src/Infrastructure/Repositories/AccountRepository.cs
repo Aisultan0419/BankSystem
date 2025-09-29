@@ -40,6 +40,11 @@ namespace Infrastructure.Repositories
             .ToListAsync();
             return list;
         }
+        public async Task<Account> GetAccountById(Guid accountId)
+        {
+            var account = await _context.Accounts.FindAsync(accountId);
+            return account ?? throw new ArgumentNullException();
+        }
         public async Task<Card> GetRequisitesDTOAsync(Guid clientId, string last_numbers)
         {
             var result = await _context.Clients

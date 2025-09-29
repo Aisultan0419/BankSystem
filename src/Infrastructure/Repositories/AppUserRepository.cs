@@ -21,6 +21,7 @@ namespace Infrastructure.Repositories
         {
             var result = await _context.AppUsers.AsNoTracking()
                 .Include(u => u.Client)
+                    .ThenInclude(a => a.Accounts)
                 .FirstOrDefaultAsync(appUser => appUser.Id == Id);
             return result!;
         }

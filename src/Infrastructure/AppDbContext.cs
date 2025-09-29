@@ -13,11 +13,18 @@ namespace BankSystem
         public DbSet<Card> Cards { get; set; }
         public DbSet<Pan> Pans { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<AppUser>().HasMany(a => a.refreshTokens).WithOne(b => b.AppUser).OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<Client>().HasMany(b => b.AppUsers).WithOne(a => a.Client).OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<AppUser>()
+            .HasMany(a => a.refreshTokens)
+            .WithOne(b => b.AppUser)
+            .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<Client>()
+            .HasMany(b => b.AppUsers)
+            .WithOne(a => a.Client)
+            .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<Client>()
             .HasMany(c => c.Accounts)
             .WithOne(a => a.Client)
@@ -34,7 +41,15 @@ namespace BankSystem
             .HasForeignKey<Pan>(p => p.CardId)  
             .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Pan>().HasOne(p => p.Card).WithOne(c => c.Pan).HasForeignKey<Pan>(p => p.CardId);
+            modelBuilder.Entity<Pan>()
+            .HasOne(p => p.Card)
+            .WithOne(c => c.Pan)
+            .HasForeignKey<Pan>(p => p.CardId);
+
+            modelBuilder.Entity<Client>()
+            .HasMany(p => p.Transactions)
+            .WithOne(c => c.Client)
+            .OnDelete(DeleteBehavior.Restrict); 
 
 
         }

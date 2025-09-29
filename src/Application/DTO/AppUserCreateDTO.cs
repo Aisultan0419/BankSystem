@@ -8,5 +8,6 @@ namespace Application.DTO
         public required string Email { get; set; }
         public string? PasswordHash { get; set; }
         public required string IIN { get; set; }
+        public string PinCode { get; set; } = null!;    
     }
 }

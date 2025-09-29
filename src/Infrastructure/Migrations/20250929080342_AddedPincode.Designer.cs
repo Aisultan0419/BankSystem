@@ -3,6 +3,7 @@ using System;
 using BankSystem;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,13 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250929080342_AddedPincode")]
+    partial class AddedPincode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "9.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -34,15 +37,9 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal?>("DepositedLastDay")
-                        .HasColumnType("numeric");
-
                     b.Property<string>("Iban")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateOnly>("LastDepositDateKz")
-                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -60,16 +57,10 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("BlockedUntil")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("BlockedUntilPassword")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<Guid>("ClientId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("CountOfLoginAttempts")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CountOfLoginViaPasswordAttempts")
                         .HasColumnType("integer");
 
                     b.Property<string>("Email")
@@ -116,6 +107,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PinCode")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int?>("Status")
@@ -216,40 +208,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("Domain.Models.Transaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("From")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("To")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("Transactions");
-                });
-
             modelBuilder.Entity("Domain.Models.Account", b =>
                 {
                     b.HasOne("Domain.Models.Client", "Client")
@@ -305,17 +263,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("AppUser");
                 });
 
-            modelBuilder.Entity("Domain.Models.Transaction", b =>
-                {
-                    b.HasOne("Domain.Models.Client", "Client")
-                        .WithMany("Transactions")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("Domain.Models.Account", b =>
                 {
                     b.Navigation("Cards");
@@ -337,8 +284,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("AppUsers");
-
-                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

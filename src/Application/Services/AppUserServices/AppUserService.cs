@@ -11,15 +11,15 @@ namespace Application.Services.AppUserServices
        
         private readonly IUserRepository _userRepository;
         private readonly IAppUserRepository _appUserRepository;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IHasher _Hasher;
         private readonly IClientRepository _clientRepository;
         public AppUserService(IUserRepository userRepository
-            ,IPasswordHasher passwordHasher
+            ,IHasher Hasher
             ,IAppUserRepository appUserRepository
             ,IClientRepository clientRepository)
         {
             _userRepository = userRepository;
-            _passwordHasher = passwordHasher;
+            _Hasher = Hasher;
             _appUserRepository = appUserRepository;
             _clientRepository = clientRepository;
         }
@@ -39,7 +39,8 @@ namespace Application.Services.AppUserServices
             {
                 Id = Guid.NewGuid(),
                 Email = AppUserDTO.Email,
-                PasswordHash = _passwordHasher.Generate(AppUserDTO.PasswordHash!),
+                PasswordHash = _Hasher.Generate(AppUserDTO.PasswordHash!),
+                HashedPinCode = _Hasher.Generate(AppUserDTO.PinCode!),
                 VerificationStatus = VerificationStatus.Pending,
                 Client = client,
                 IsActive = false

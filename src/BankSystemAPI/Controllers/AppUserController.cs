@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Application.DTO;
 using Domain.Enums;
-using Domain.Models;
-using Microsoft.AspNetCore.Authorization;
 namespace BankSystemAPI.Controllers
 {
     [ApiController]
