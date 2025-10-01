@@ -4,7 +4,7 @@ using System.Text;
 using Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 
-namespace Infrastructure
+namespace Infrastructure.PanServices
 {
     public class PanEncryptor : IPanEncryptor
     {

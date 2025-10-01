@@ -1,9 +1,8 @@
-﻿using Application.DTO;
+﻿using Application.DTO.AuthDTO;
 using Application.Interfaces.Services;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+
 
 namespace BankSystemAPI.Controllers
 {
@@ -17,9 +16,9 @@ namespace BankSystemAPI.Controllers
             _authService = authService;
         }
         [HttpPost("login/pin")]
-        public async Task<ActionResult<LoginStatusDTO>> LoginViaPin([FromQuery]string email, [FromQuery]string pinCode)
+        public async Task<ActionResult<LoginStatusDTO>> LoginViaPin([FromBody] LoginViaPinDTO loginViaPinDTO)
         {
-            var result = await _authService.LoginPin(email!, pinCode);
+            var result = await _authService.LoginPin(loginViaPinDTO.Email!, loginViaPinDTO.PinCode);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
             {
                 return BadRequest(result);
@@ -34,9 +33,9 @@ namespace BankSystemAPI.Controllers
             }
         }
         [HttpPost("login/password")]
-        public async Task<ActionResult<LoginStatusDTO>> LoginViaPassword([FromQuery] string email, [FromQuery] string password)
+        public async Task<ActionResult<LoginStatusDTO>> LoginViaPassword([FromBody] LoginViaPasswordDTO loginViaPasswordDTO)
         {
-            var result = await _authService.LoginPassword(email!, password);
+            var result = await _authService.LoginPassword(loginViaPasswordDTO.Email!, loginViaPasswordDTO.Password);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
             {
                 return BadRequest(result);

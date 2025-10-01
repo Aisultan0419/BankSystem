@@ -19,7 +19,7 @@ namespace Infrastructure.JWT
             _options = options.Value;
         }
         public string GenerateRefreshToken()
-        {
+        { 
             const int size = 32;
 
             byte[] bytes = new byte[size];

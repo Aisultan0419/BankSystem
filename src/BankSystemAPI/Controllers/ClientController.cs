@@ -1,4 +1,4 @@
-﻿using Application.DTO;
+﻿using Application.DTO.ClientDTO;
 using Application.Interfaces.Services;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +25,9 @@ namespace BankSystemAPI.Controllers
             return CreatedAtAction(null, result);
         }
         [HttpDelete("{iin}")]
-        public async Task<IActionResult> Delete([FromQuery] string IIN)
+        public async Task<IActionResult> Delete([FromQuery] IINDTO iinDTO)
         {
-            bool result = await _clientService.DeleteClient(IIN);
+            bool result = await _clientService.DeleteClient(iinDTO.IIN);
             if (result == false)
             {
                 return NotFound("Client was not found");

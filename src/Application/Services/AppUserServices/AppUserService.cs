@@ -1,4 +1,5 @@
-﻿using Application.DTO;
+﻿using Application.DTO.AppUserDTO;
+using Application.DTO.ClientDTO;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;

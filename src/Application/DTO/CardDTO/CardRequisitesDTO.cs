@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Domain.Enums;
 using Domain.Models;
 
-namespace Application.DTO
+namespace Application.DTO.CardDTO
 {
     public class CardRequisitesDTO
     {
