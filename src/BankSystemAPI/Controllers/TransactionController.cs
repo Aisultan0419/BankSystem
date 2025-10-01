@@ -1,4 +1,4 @@
-﻿using Application.DTO;
+﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +20,7 @@ namespace BankSystemAPI.Controllers
         }
         [Authorize]
         [HttpPost("deposit")]
-        public async Task<ActionResult<DepositResponseDTO>> Deposit([FromQuery] decimal amount, [FromQuery] string lastNumbers)
+        public async Task<ActionResult<DepositResponseDTO>> Deposit([FromBody] DepositQueryDTO depositQueryDTO)
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
             {
@@ -31,7 +31,7 @@ namespace BankSystemAPI.Controllers
             }
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var result = await _depositService.DepositAsync(amount, appUserIdClaim!, lastNumbers);
+            var result = await _depositService.DepositAsync(depositQueryDTO.Amount, appUserIdClaim!, depositQueryDTO.LastNumbers);
             if (result.depositedAmount == null)
             {
                 return BadRequest(result.message);
@@ -40,8 +40,7 @@ namespace BankSystemAPI.Controllers
         }
         [Authorize]
         [HttpPost("transfer")]
-        public async Task<ActionResult<TransferResponseDTO>> Transfer([FromQuery] string iban, [FromQuery] decimal amount,
-            [FromQuery] string lastNumbers)
+        public async Task<ActionResult<TransferResponseDTO>> Transfer([FromBody] TransferQueryDTO transferQueryDTO)
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
             {
@@ -52,7 +51,10 @@ namespace BankSystemAPI.Controllers
             }
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var result = await _transferService.TransferAsync(appUserIdClaim!, iban, amount, lastNumbers);
+            var result = await _transferService.TransferAsync(appUserIdClaim!
+                ,transferQueryDTO.Iban
+                ,transferQueryDTO.Amount
+                ,transferQueryDTO.LastNumbers);
             if (result.transferredAmount == null)
             {
                 return BadRequest(result.message);
