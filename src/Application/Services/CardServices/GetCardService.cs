@@ -1,4 +1,4 @@
-﻿using Application.DTO;
+﻿using Application.DTO.CardDTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 namespace Application.Services.CardServices

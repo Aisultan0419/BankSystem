@@ -1,7 +1,7 @@
 ﻿using Domain.Enums;
 using Domain.Models;
 
-namespace Application.DTO
+namespace Application.DTO.ClientDTO
 {
     public class ClientCreateDTO
     {

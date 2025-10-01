@@ -9,16 +9,21 @@ using Application.Services.AuthServices;
 using Application.Services.CardServices;
 using Application.Services.ClientServices;
 using Application.Services.TransactionServices;
-using BankSystem;
+using Application.Validators.AppUserValidators;
+using Application.Validators.CardValidators;
+using Application.Validators.ClientValidators;
+using Application.Validators.TransactionQueryValidators;
 using BankSystemAPI.Extensions;
 using Domain.Configuration;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure;
+using Infrastructure.DbContext; 
 using Infrastructure.JWT;
+using Infrastructure.PanServices;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.CookiePolicy;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -76,7 +81,16 @@ builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IIBanService, IbanService>();
 builder.Logging.AddConsole();
 
-builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationAutoValidation()
+    .AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<ClientValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<AppUserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginViaPasswordValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginViaPinValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LastNumberValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<IINValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TransferQueryValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<DepositQueryValidator>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<RefreshTokenOptions>(

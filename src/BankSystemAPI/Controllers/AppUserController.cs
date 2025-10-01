@@ -1,7 +1,8 @@
 ﻿using Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
-using Application.DTO;
 using Domain.Enums;
+using Application.DTO.AppUserDTO;
+using Application.DTO.ClientDTO;
 namespace BankSystemAPI.Controllers
 {
     [ApiController]

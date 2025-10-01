@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Interfaces.Repositories;
-using BankSystem;
 using Domain.Models;
+using Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories

@@ -1,7 +1,7 @@
 ﻿using Application.Interfaces.Repositories;
-using BankSystem;
 using Microsoft.EntityFrameworkCore.Storage;
 using Domain.Models;
+using Infrastructure.DbContext;
 
 namespace Infrastructure.Repositories
 {

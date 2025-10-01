@@ -1,7 +1,7 @@
-﻿using Application.DTO;
+﻿using Application.DTO.CardDTO;
 using Application.Interfaces.Repositories;
-using BankSystem;
 using Domain.Models;
+using Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories

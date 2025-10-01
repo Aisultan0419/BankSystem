@@ -1,4 +1,4 @@
-﻿using Application.DTO;
+﻿using Application.DTO.ClientDTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Enums;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.DTO;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
 using Domain.Configuration;
@@ -12,6 +11,7 @@ using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Application.Interfaces.Services;
+using Application.DTO.AuthDTO;
 namespace Application.Services.AuthServices
 {
     public class AuthService : IAuthService

@@ -1,4 +1,4 @@
-﻿using Application.DTO;
+﻿using Application.DTO.TransactionDTO;
 namespace Application.Interfaces.Services
 {
     public interface ITransferService

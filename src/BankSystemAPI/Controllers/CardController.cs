@@ -1,7 +1,7 @@
 ﻿using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Application.DTO;
+using Application.DTO.CardDTO;
 using Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +40,7 @@ namespace BankSystemAPI.Controllers
         }
         [Authorize]
         [HttpGet("getRequisitesCards")]
-        public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] string last_numbers)
+        public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] LastNumbersDTO lastNumbersDTO)
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
                 return Unauthorized("No token or not authenticated");
@@ -48,7 +48,7 @@ namespace BankSystemAPI.Controllers
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var card = await _getRequisitesOfCardService.GetRequisitesOfCard(appUserIdClaim ?? throw new Exception("AppUser id is not here"), last_numbers);
+            var card = await _getRequisitesOfCardService.GetRequisitesOfCard(appUserIdClaim ?? throw new Exception("AppUser id is not here"), lastNumbersDTO.LastNumbers);
             if (card == null)
             {
                 return NotFound("Card was not found");

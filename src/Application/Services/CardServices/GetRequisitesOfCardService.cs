@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Application.Interfaces;
-using Application.DTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.DTO.CardDTO;
 
 namespace Application.Services.CardServices
 {
