@@ -10,18 +10,23 @@ namespace BankSystemAPI.Controllers
     public class AppUserController : ControllerBase
     {
         private readonly IAppUserService _appUserService;
-        public AppUserController(IAppUserService appUserService)
+        private readonly ILogger<AppUserController> _logger;
+        public AppUserController(IAppUserService appUserService, ILogger<AppUserController> logger)
         {
             _appUserService = appUserService;
+            _logger = logger;
         }
         [HttpPost]
         public async Task<ActionResult<RegistrationStatusDTO>> CreateAppUser([FromBody] AppUserCreateDTO appUserDTO)
         {
+            _logger.LogInformation("Creating new app-user... {email}", appUserDTO.Email);
             var result = await _appUserService.RegisterAppUser(appUserDTO);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
             {
+                _logger.LogWarning("App-user {email} could not register - {info}", appUserDTO.Email, result.Message);
                 return Conflict(result);
             }
+            _logger.LogInformation("App-user created successfully - {email}", appUserDTO.Email);    
             return CreatedAtAction(null, result);
         }
     }

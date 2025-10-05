@@ -2,6 +2,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Models;
+using System.Runtime.CompilerServices;
 namespace Application.Services.TransactionServices
 {
     public class TransferService : ITransferService
@@ -10,6 +11,10 @@ namespace Application.Services.TransactionServices
         private readonly IAccountRepository _accountRepository;
         private readonly IUserRepository _userRepository;
         private readonly ITransactionRepository _transactionRepository;
+        private const decimal daily_limit = 2000000m;
+        private static readonly TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
+        private DateTime KazNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+        private DateOnly KazToday => DateOnly.FromDateTime(KazNow);
         public TransferService(IAppUserRepository appUserRepository
             ,IAccountRepository accountRepository
             ,IUserRepository userRepository
@@ -22,34 +27,12 @@ namespace Application.Services.TransactionServices
         }
         public async Task<TransferResponseDTO> TransferAsync(string appUserId, string iban, decimal amount, string lastNumbers)
         {
-            const decimal daily_limit = 2000000m;
-            Guid.TryParse(appUserId, out var appUserGuid);
-            if (amount < 0 || daily_limit < amount)
-            {
-                return new TransferResponseDTO
-                {
-                    message = "Invalid amount"
-                };
-            }
-            var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
-            if (appUser == null)
-            {
-                return new TransferResponseDTO
-                {
-                    message = "AppUser was not found"
-                };
-            }
+            var lookup = await findAccount(appUserId, lastNumbers);
+            if (!lookup.Success)
+                return new TransferResponseDTO { message = lookup.ErrorMessage };
 
-            var clientId = appUser.Client.Id;
-            var card = await _accountRepository.GetRequisitesDTOAsync(clientId, lastNumbers);
-            if (card == null)
-            {
-                return new TransferResponseDTO
-                {
-                    message = "Card was not found"
-                };
-            }
-            var fromAccount = await _accountRepository.GetAccountById(card.AccountId);
+            var fromAccount = lookup.Account!;
+            var appUser = lookup.AppUser!;
             if (fromAccount.Balance < amount)
             {
                 return new TransferResponseDTO
@@ -57,22 +40,15 @@ namespace Application.Services.TransactionServices
                     message = "Insufficient funds"
                 };
             }
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
-            var kazNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-            var kazToday = DateOnly.FromDateTime(kazNow);
-            if (fromAccount.LastTransferDateKz != kazToday)
+            var resultOfCheck = checkLimit(fromAccount, amount);
+            if (resultOfCheck.Item1 == false)
             {
-                fromAccount.TransferredLastDay = 0m;
-                fromAccount.LastTransferDateKz = kazToday;
-            }
-            if (fromAccount.TransferredLastDay + amount > daily_limit)
-            {
-                var canDeposit = daily_limit - fromAccount.TransferredLastDay;
                 return new TransferResponseDTO
                 {
-                    message = $"Daily limit exceeded. You can deposit maximum {canDeposit} today."
+                    message = $"You can transfer only {resultOfCheck.Item2} for today"
                 };
             }
+            
             var toAccount = await _accountRepository.GetAccountByIban(iban);
             if (toAccount == null)
             {
@@ -88,13 +64,13 @@ namespace Application.Services.TransactionServices
                     toAccount.Deposit(amount);
                     fromAccount.TransferOut(amount);
                     fromAccount.TransferredLastDay += amount;
-                    fromAccount.LastTransferDateKz = kazToday;
+                    fromAccount.LastTransferDateKz = KazToday;
                     var transaction = new Transaction
                     {
                         Id = Guid.NewGuid(),
                         From = fromAccount.Iban.ToString(),
                         To = toAccount.Iban.ToString(),
-                        ClientId = appUser.Client.Id,
+                        ClientId = appUser!.Client.Id,
                         Amount = amount,
                         CreatedAt = DateTime.UtcNow,
                         Type = "Transfer"
@@ -118,6 +94,54 @@ namespace Application.Services.TransactionServices
                 remainingBalance = fromAccount.Balance
             };
 
+        }
+        private (bool, decimal?) checkLimit(Account account, decimal amount)
+        {
+            if (account.LastTransferDateKz != KazToday)
+            {
+                account.TransferredLastDay = 0m;
+                account.LastTransferDateKz = KazToday;
+            }
+            if (account.TransferredLastDay + amount > daily_limit)
+            {
+                var canDeposit = daily_limit - account.TransferredLastDay;
+                return (false, canDeposit);
+            }
+            return (true, null);
+        }
+        private async Task<AccountLookupResult> findAccount(string appUserId, string lastNumbers)
+        {
+            if (!Guid.TryParse(appUserId, out var appUserGuid))
+                return AccountLookupResult.Fail("Invalid user id format");
+
+            var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
+            if (appUser == null)
+                return AccountLookupResult.Fail("AppUser was not found");
+
+            var card = await _accountRepository.GetRequisitesDTOAsync(appUser.Client.Id, lastNumbers);
+            if (card == null)
+                return AccountLookupResult.Fail("Card was not found");
+
+            var account = await _accountRepository.GetAccountById(card.AccountId);
+            if (account == null)
+                return AccountLookupResult.Fail("Account was not found");
+
+            return AccountLookupResult.Ok(account, appUser);
+        }
+        private class AccountLookupResult
+        {
+            public bool Success { get; private set; }
+            public string? ErrorMessage { get; private set; }
+            public Account? Account { get; private set; }
+            public AppUser? AppUser { get; private set; }
+
+            private AccountLookupResult() { }
+
+            public static AccountLookupResult Fail(string message) =>
+                new AccountLookupResult { Success = false, ErrorMessage = message };
+
+            public static AccountLookupResult Ok(Account account, AppUser appUser) =>
+                new AccountLookupResult { Success = true, Account = account, AppUser = appUser };
         }
     }
 }

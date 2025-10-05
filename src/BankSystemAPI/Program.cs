@@ -14,6 +14,7 @@ using Application.Validators.CardValidators;
 using Application.Validators.ClientValidators;
 using Application.Validators.TransactionQueryValidators;
 using BankSystemAPI.Extensions;
+using BankSystemAPI.Middlewares;
 using Domain.Configuration;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -23,8 +24,10 @@ using Infrastructure.JWT;
 using Infrastructure.PanServices;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +63,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+Log.Logger = LoggingConfiguration.CreateLogger("Logs/log-.txt");
+builder.Host.UseSerilog();
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientService, ClientService>();
@@ -126,6 +131,26 @@ if (app.Environment.IsDevelopment())
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "My Bank API");
         });
 }
+app.UseMiddleware<LoggerMiddleware>();
+app.UseExceptionHandler(context => {
+    context.Run(async content =>
+    {
+        content.Response.StatusCode = 500;
+        content.Response.ContentType = "application/json";
+        var box = content.Features.Get<IExceptionHandlerPathFeature>();
+        var error = box?.Error;
+
+        var logget = app.Services.GetRequiredService<ILogger<Program>>();
+        logget.LogError(error, "Unhandled exception: {message}", error?.Message);
+        var Error = new
+        {
+            Topic = "Unhandled exception",
+            message = error?.Message
+        };
+        string message = System.Text.Json.JsonSerializer.Serialize(Error);
+        await content.Response.WriteAsync(message);
+    });
+});
 app.UseCookiePolicy(new CookiePolicyOptions
 {
     HttpOnly = HttpOnlyPolicy.Always,

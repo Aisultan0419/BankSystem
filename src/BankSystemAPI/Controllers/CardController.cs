@@ -14,34 +14,42 @@ namespace BankSystemAPI.Controllers
     {
         private readonly IGetCardService _getCardService;
         private readonly IGetRequisitesOfCardService _getRequisitesOfCardService;
-        public CardController(IGetCardService getCardService, IGetRequisitesOfCardService getRequisitesOfCard)
+        private readonly ILogger<CardController> _logger;
+        public CardController(IGetCardService getCardService, IGetRequisitesOfCardService getRequisitesOfCard, ILogger<CardController> logger)
         {
             _getCardService = getCardService;
             _getRequisitesOfCardService = getRequisitesOfCard;
+            _logger = logger;
         }
         [Authorize]
         [HttpGet("getAllCards")]
         public async Task<ActionResult<IEnumerable<GetCardDTO>>> GetAllCards()
         {
+            _logger.LogInformation("Fetching all cards for the authenticated user.");
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
                 return Unauthorized("No token or not authenticated");
-
+            _logger.LogInformation("User is authenticated.");
+            _logger.LogInformation("Attempt to get id of user...");
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (!Guid.TryParse(appUserIdClaim, out var appUserGuid))
                 return BadRequest("Invalid user id format");
+            _logger.LogInformation("Attempt to get all cards of user...");
             var cards = await _getCardService.GetAllCards(appUserIdClaim ?? throw new Exception("NoId"));
             if (cards != null)
             {
+                _logger.LogInformation("Cards retrieved successfully.");
                 return Ok(cards);
             }
+            _logger.LogWarning("No cards found for the user.");
             return NotFound();
         }
         [Authorize]
         [HttpGet("getRequisitesCards")]
         public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] LastNumbersDTO lastNumbersDTO)
         {
+            _logger.LogInformation("Fetching card requisites for the authenticated user.");
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
                 return Unauthorized("No token or not authenticated");
 
@@ -51,8 +59,10 @@ namespace BankSystemAPI.Controllers
             var card = await _getRequisitesOfCardService.GetRequisitesOfCard(appUserIdClaim ?? throw new Exception("AppUser id is not here"), lastNumbersDTO.LastNumbers);
             if (card == null)
             {
+                _logger.LogWarning("Card not found with the provided last numbers.");
                 return NotFound("Card was not found");
             }
+            _logger.LogInformation("Card requisites retrieved successfully.");
             return Ok(card);
         }
     }

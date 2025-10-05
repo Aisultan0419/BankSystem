@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Interfaces.Auth;
+﻿using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
 using Domain.Configuration;
 using Domain.Enums;

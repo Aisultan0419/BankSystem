@@ -2,6 +2,7 @@
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Models;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Application.Services.TransactionServices
 {
@@ -11,6 +12,9 @@ namespace Application.Services.TransactionServices
         private readonly IUserRepository _userRepository;
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionRepository _transactionRepository;
+        private static readonly TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
+        private DateTime KazNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
+        private DateOnly KazToday => DateOnly.FromDateTime(KazNow);
         public DepositService(IAppUserRepository appUserRepository
             ,IUserRepository userRepository
             ,IAccountRepository accountRepository
@@ -21,9 +25,9 @@ namespace Application.Services.TransactionServices
             _accountRepository = accountRepository;
             _transactionRepository = transactionRepository;
         }
+        private const decimal daily_limit = 2000000m;
         public async Task<DepositResponseDTO> DepositAsync(decimal amount, string appUserId, string lastNumbers)
         {
-            const decimal daily_limit = 2000000m;
             Guid.TryParse(appUserId, out var appUserGuid);
             var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
             if (appUser == null)
@@ -33,13 +37,7 @@ namespace Application.Services.TransactionServices
                     message = "AppUser was not found"
                 };
             }
-            if (amount < 0 || daily_limit > 2000000)
-            {
-                return new DepositResponseDTO
-                {
-                    message = "Invalid amount"
-                };
-            }
+            if (isValidAmount(amount) == false) return new DepositResponseDTO { message = "Invalid amount" };
             var clientId = appUser.Client.Id;
             var card = await _accountRepository.GetRequisitesDTOAsync(clientId, lastNumbers);
             if (card == null)
@@ -50,20 +48,12 @@ namespace Application.Services.TransactionServices
                 };
             }
             var account = await _accountRepository.GetAccountById(card.AccountId);
-            var tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"); 
-            var kazNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-            var kazToday = DateOnly.FromDateTime(kazNow);
-            if (account.LastDepositDateKz != kazToday)
+            var resultOfCheck = checkLimit(account, amount);
+            if (resultOfCheck.Item1 == false)
             {
-                account.DepositedLastDay = 0m;
-                account.LastDepositDateKz = kazToday;
-            }
-            if (account.DepositedLastDay + amount > daily_limit)
-            {
-                var canDeposit = daily_limit - account.DepositedLastDay;
                 return new DepositResponseDTO
                 {
-                    message = $"Daily limit exceeded. You can deposit maximum {canDeposit} today."
+                    message = $"You can deposit only {resultOfCheck.Item2}"
                 };
             }
             using (var tx = await _transactionRepository.BeginTransactionAsync())
@@ -72,7 +62,7 @@ namespace Application.Services.TransactionServices
                 {
                     account.Deposit(amount);
                     account.DepositedLastDay += amount;
-                    account.LastDepositDateKz = kazToday;   
+                    account.LastDepositDateKz = KazToday;   
                     var transaction = new Transaction
                     {
                         Id = Guid.NewGuid(),
@@ -103,6 +93,21 @@ namespace Application.Services.TransactionServices
                 newBalance = account.Balance
             };
             
+        }
+        private bool isValidAmount(decimal amount) => amount > 0 && amount <= daily_limit;
+        private (bool, decimal?) checkLimit(Account account, decimal amount)
+        {
+            if (account.LastDepositDateKz != KazToday)
+            {
+                account.DepositedLastDay = 0m;
+                account.LastDepositDateKz = KazToday;
+            }
+            if (account.DepositedLastDay + amount > daily_limit)
+            {
+                var canDeposit = daily_limit - account.DepositedLastDay;
+                return (false, canDeposit);
+            }
+            return (true, null);
         }
     }
 }

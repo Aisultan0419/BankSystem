@@ -13,10 +13,14 @@ namespace BankSystemAPI.Controllers
     {
         private readonly IDepositService _depositService;
         private readonly ITransferService _transferService;
-        public TransactionController(IDepositService depositService, ITransferService transferService)
+        private readonly ILogger<TransactionController> _logger;
+        public TransactionController(IDepositService depositService
+            ,ITransferService transferService
+            ,ILogger<TransactionController> logger)
         {
             _depositService = depositService;
             _transferService = transferService;
+            _logger = logger;
         }
         [Authorize]
         [HttpPost("deposit")]
@@ -24,8 +28,9 @@ namespace BankSystemAPI.Controllers
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
             {
+                _logger.LogInformation("User is not authenticated.");
                 return new DepositResponseDTO
-                {
+                { 
                     message = "User is not authenticated"
                 };
             }
@@ -34,8 +39,10 @@ namespace BankSystemAPI.Controllers
             var result = await _depositService.DepositAsync(depositQueryDTO.Amount, appUserIdClaim!, depositQueryDTO.LastNumbers);
             if (result.depositedAmount == null)
             {
+                _logger.LogWarning("Deposit failed: {message}", result.message);
                 return BadRequest(result.message);
             }
+            _logger.LogInformation("Deposit successful: {depositedAmount}", result.depositedAmount);
             return Ok(result);
         }
         [Authorize]
@@ -44,6 +51,7 @@ namespace BankSystemAPI.Controllers
         {
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
             {
+                _logger.LogInformation("User is not authenticated.");
                 return new TransferResponseDTO
                 {
                     message = "User is not authenticated"
@@ -57,8 +65,10 @@ namespace BankSystemAPI.Controllers
                 ,transferQueryDTO.LastNumbers);
             if (result.transferredAmount == null)
             {
+                _logger.LogWarning("Transfer failed: {message}", result.message);
                 return BadRequest(result.message);
             }
+            _logger.LogInformation("Transfer successful: {transferredAmount}", result.transferredAmount);
             return Ok(result);
         }
     }
