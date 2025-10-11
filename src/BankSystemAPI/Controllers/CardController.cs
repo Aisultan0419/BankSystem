@@ -22,9 +22,10 @@ namespace BankSystemAPI.Controllers
             _logger = logger;
         }
         [Authorize]
-        [HttpGet("getAllCards")]
+        [HttpGet("cards")]
         public async Task<ActionResult<IEnumerable<GetCardDTO>>> GetAllCards()
         {
+            _logger.LogInformation("GetAllCards endpoint has started...");
             _logger.LogInformation("Fetching all cards for the authenticated user.");
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
                 return Unauthorized("No token or not authenticated");
@@ -32,9 +33,6 @@ namespace BankSystemAPI.Controllers
             _logger.LogInformation("Attempt to get id of user...");
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!Guid.TryParse(appUserIdClaim, out var appUserGuid))
-                return BadRequest("Invalid user id format");
             _logger.LogInformation("Attempt to get all cards of user...");
             var cards = await _getCardService.GetAllCards(appUserIdClaim ?? throw new Exception("NoId"));
             if (cards != null)
@@ -46,9 +44,10 @@ namespace BankSystemAPI.Controllers
             return NotFound();
         }
         [Authorize]
-        [HttpGet("getRequisitesCards")]
+        [HttpGet("cards/requisites")]
         public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] LastNumbersDTO lastNumbersDTO)
         {
+            _logger.LogInformation("GetRequisites endpoint has started...");
             _logger.LogInformation("Fetching card requisites for the authenticated user.");
             if (User?.Identity == null || !User.Identity.IsAuthenticated)
                 return Unauthorized("No token or not authenticated");
@@ -65,7 +64,8 @@ namespace BankSystemAPI.Controllers
             _logger.LogInformation("Card requisites retrieved successfully.");
             return Ok(card);
         }
+
     }
-    
+
 }
 

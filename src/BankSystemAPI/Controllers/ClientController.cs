@@ -19,6 +19,7 @@ namespace BankSystemAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RegistrationStatusDTO>> CreateClient([FromBody] ClientCreateDTO clientDTO)
         {
+            _logger.LogInformation("CreateClient endpoint has started...");
             _logger.LogInformation("Creating new client... {full name}", clientDTO.FullName);
             var result = await _clientService.Register(clientDTO);
             if (result.KycStatus == KycStatus.Rejected.ToString())
@@ -32,6 +33,7 @@ namespace BankSystemAPI.Controllers
         [HttpDelete("{iin}")]
         public async Task<IActionResult> Delete([FromQuery] IINDTO iinDTO)
         {
+            _logger.LogInformation("Delete endpoint has started...");
             _logger.LogInformation("Attempting to delete client with IIN: {iin}", iinDTO.IIN);
             bool result = await _clientService.DeleteClient(iinDTO.IIN);
             if (result == false)

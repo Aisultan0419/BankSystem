@@ -18,8 +18,7 @@ namespace Application.Services.AuthServices
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAppUserRepository _appUserRepository;
         private readonly IAuthRepository _authRepository;
-        public DateTime kazTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"));
-        public DateTime utcNow = DateTime.UtcNow;
+        private static readonly TimeZoneInfo kazTime = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
         public AuthService(IUserRepository userRepository
             , IHasher Hasher
             , IOptions<JwtOptions> options
@@ -38,6 +37,7 @@ namespace Application.Services.AuthServices
         }
         public async Task<LoginStatusDTO> LoginPin(string email, string pinCode)
         {
+            var utcNow = DateTimeOffset.UtcNow;
             var appUser = await _appUserRepository.GetAppUserByEmail(email);
             if (appUser == null)
             {
@@ -47,25 +47,37 @@ namespace Application.Services.AuthServices
                     Message = "There is no such app user, please register"
                 };
             }
-            if (appUser.BlockedUntil != null && appUser.BlockedUntil > utcNow)
+            if (appUser.BlockedUntil != null)
             {
-                return new LoginStatusDTO
+                var blockedUntil = DateTime.SpecifyKind(appUser.BlockedUntil.Value, DateTimeKind.Utc);
+                if (blockedUntil > utcNow.UtcDateTime)
                 {
-                    VerificationStatus = VerificationStatus.Rejected.ToString(),
-                    Message = $"User is blocked until {TimeZoneInfo.ConvertTimeFromUtc(appUser.BlockedUntil.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"))}"
-                };
-            }
-            if (appUser.CountOfLoginAttempts > 3)
-            {
-                var utcNow = DateTime.UtcNow;
-                appUser.BlockedUntil = utcNow.AddHours(3);
-                await _userRepository.SaveChangesAsync();
+                    return new LoginStatusDTO
+                    {
+                        VerificationStatus = VerificationStatus.Rejected.ToString(),
+                        Message = $"User is blocked until {TimeZoneInfo.ConvertTimeFromUtc(appUser.BlockedUntil.Value,
+                                kazTime)}"
+                    };
+                }
             }
             var result_verification = _Hasher.Verify(pinCode, appUser.HashedPinCode!);
-            if (result_verification == false)
+            if (!result_verification)
             {
                 appUser.CountOfLoginAttempts++;
+                if (appUser.CountOfLoginAttempts > 3)
+                {
+                    var blockUntilUtc = utcNow.AddHours(3).UtcDateTime; 
+                    appUser.BlockedUntil = blockUntilUtc;
+                    await _userRepository.SaveChangesAsync();
+
+                    var localBlocked = TimeZoneInfo.ConvertTimeFromUtc(blockUntilUtc, kazTime);
+                    return new LoginStatusDTO
+                    {
+                        VerificationStatus = VerificationStatus.Rejected.ToString(),
+                        Message = $"User is blocked until {localBlocked}"
+                    };
+                }
+
                 await _userRepository.SaveChangesAsync();
                 return new LoginStatusDTO
                 {
@@ -73,20 +85,10 @@ namespace Application.Services.AuthServices
                     Message = "Incorrect pin code"
                 };
             }
-            appUser.BlockedUntil = null;
-            appUser.CountOfLoginAttempts = 0;
-            appUser.BlockedUntilPassword = null;
-            appUser.CountOfLoginViaPasswordAttempts = 0;
+            UserAttemptsReset(appUser);
             var token = _tokenService.GenerateJwt(appUser);
             var refreshToken = await _tokenService.CreateRefreshTokenAsync(appUser.Id);
-            var hashed_one = new RefreshToken
-            {
-                Id = refreshToken.Id,
-                Token = _tokenService.HashRefreshToken(refreshToken.Token),
-                Expires = refreshToken.Expires,
-                AppUser = appUser,
-                UserId = appUser.Id
-            };
+            var hashed_one = generateRefreshBody(appUser, refreshToken);
             await _authRepository.SaveRefreshToken(hashed_one);
             await _userRepository.SaveChangesAsync();
             return new LoginStatusDTO
@@ -102,6 +104,7 @@ namespace Application.Services.AuthServices
         }
         public async Task<LoginStatusDTO> LoginPassword(string email, string password)
         {
+            var utcNow = DateTimeOffset.UtcNow;
             var appUser = await _appUserRepository.GetAppUserByEmail(email);
             if (appUser == null)
             {
@@ -117,19 +120,27 @@ namespace Application.Services.AuthServices
                 {
                     VerificationStatus = VerificationStatus.Rejected.ToString(),
                     Message = $"User is blocked until {TimeZoneInfo.ConvertTimeFromUtc(appUser.BlockedUntilPassword.Value,
-                                TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty"))}"
+                                kazTime)}"
                 };
             }
-            if (appUser.CountOfLoginViaPasswordAttempts > 3)
-            {
-                var utcNow = DateTime.UtcNow;
-                appUser.BlockedUntilPassword = utcNow.AddHours(3);
-                await _userRepository.SaveChangesAsync();
-            }
             var result_verification = _Hasher.Verify(password, appUser.PasswordHash!);
-            if (result_verification == false)
+            if (!result_verification)
             {
                 appUser.CountOfLoginViaPasswordAttempts++;
+                if (appUser.CountOfLoginViaPasswordAttempts > 3)
+                {
+                    var blockUntilUtc = utcNow.AddHours(3).UtcDateTime;
+                    appUser.BlockedUntilPassword = blockUntilUtc;
+                    await _userRepository.SaveChangesAsync();
+
+                    var localBlocked = TimeZoneInfo.ConvertTimeFromUtc(blockUntilUtc, kazTime);
+                    return new LoginStatusDTO
+                    {
+                        VerificationStatus = VerificationStatus.Rejected.ToString(),
+                        Message = $"User is blocked until {localBlocked}"
+                    };
+                }
+
                 await _userRepository.SaveChangesAsync();
                 return new LoginStatusDTO
                 {
@@ -137,20 +148,10 @@ namespace Application.Services.AuthServices
                     Message = "Incorrect password"
                 };
             }
-            appUser.BlockedUntil = null;
-            appUser.CountOfLoginAttempts = 0;
-            appUser.BlockedUntilPassword = null;
-            appUser.CountOfLoginViaPasswordAttempts = 0;
+            UserAttemptsReset(appUser);
             var token = _tokenService.GenerateJwt(appUser);
             var refreshToken = await _tokenService.CreateRefreshTokenAsync(appUser.Id);
-            var hashed_one = new RefreshToken
-            {
-                Id = refreshToken.Id,
-                Token = _tokenService.HashRefreshToken(refreshToken.Token),
-                Expires = refreshToken.Expires,
-                AppUser = appUser,
-                UserId = appUser.Id
-            };
+            var hashed_one = generateRefreshBody(appUser, refreshToken);
             await _authRepository.SaveRefreshToken(hashed_one);
             await _userRepository.SaveChangesAsync();
             return new LoginStatusDTO
@@ -164,8 +165,28 @@ namespace Application.Services.AuthServices
                 DeviceInfo = refreshToken.DeviceInfo
             };
         }
+
+        private void UserAttemptsReset(AppUser appUser)
+        {
+            appUser.CountOfLoginAttempts = 0;
+            appUser.BlockedUntil = null;
+            appUser.CountOfLoginViaPasswordAttempts = 0;
+            appUser.BlockedUntilPassword = null;
+        }   
+        private RefreshToken generateRefreshBody(AppUser appUser, RefreshToken refreshToken)
+        {
+            return new RefreshToken
+            {
+                Id = refreshToken.Id,
+                Token = _tokenService.HashRefreshToken(refreshToken.Token),
+                Expires = refreshToken.Expires,
+                AppUser = appUser,
+                UserId = appUser.Id
+            };
+        }
         public async Task<LoginStatusDTO> RefreshToken()
         {
+            var utcNow = DateTime.UtcNow;
             if (!_httpContextAccessor.HttpContext.Request.Cookies.TryGetValue("refreshToken", out var refreshToken))
             {
                 return new LoginStatusDTO

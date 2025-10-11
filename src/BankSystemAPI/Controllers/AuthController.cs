@@ -21,6 +21,7 @@ namespace BankSystemAPI.Controllers
         [HttpPost("login/pin")]
         public async Task<ActionResult<LoginStatusDTO>> LoginViaPin([FromBody] LoginViaPinDTO loginViaPinDTO)
         {
+            _logger.LogInformation("LoginViaPin endpoint has started...");
             _logger.LogInformation("App-user attempting to log in via PIN... {email}", loginViaPinDTO.Email);
             var result = await _authService.LoginPin(loginViaPinDTO.Email!, loginViaPinDTO.PinCode);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
@@ -41,6 +42,7 @@ namespace BankSystemAPI.Controllers
         [HttpPost("login/password")]
         public async Task<ActionResult<LoginStatusDTO>> LoginViaPassword([FromBody] LoginViaPasswordDTO loginViaPasswordDTO)
         {
+            _logger.LogInformation("LoginViaPassword endpoint has started...");
             _logger.LogInformation("App-user attempting to log in via Password... {email}", loginViaPasswordDTO.Email);
             var result = await _authService.LoginPassword(loginViaPasswordDTO.Email!, loginViaPasswordDTO.Password);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
