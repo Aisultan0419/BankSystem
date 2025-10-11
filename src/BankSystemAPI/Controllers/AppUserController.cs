@@ -19,6 +19,7 @@ namespace BankSystemAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<RegistrationStatusDTO>> CreateAppUser([FromBody] AppUserCreateDTO appUserDTO)
         {
+            _logger.LogInformation("CreateAppUser endpoint has started...");
             _logger.LogInformation("Creating new app-user... {email}", appUserDTO.Email);
             var result = await _appUserService.RegisterAppUser(appUserDTO);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())

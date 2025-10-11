@@ -4,6 +4,7 @@ using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Application.DTO.CardDTO;
+using System.Security.Cryptography;
 
 namespace Application.Services.CardServices
 {
@@ -29,9 +30,20 @@ namespace Application.Services.CardServices
             var clientId = appUser.Client.Id;
 
             var card = await _accountRepository.GetRequisitesDTOAsync(clientId, last_numbers);
-
-            var pan_string = _panEncryptor.Decrypt(card.Pan.CipherText, card.Pan.Nonce, card.Pan.Tag);
-
+            string pan_string;
+            try
+            {
+                pan_string = _panEncryptor.Decrypt(card.Pan.CipherText, card.Pan.Nonce, card.Pan.Tag);
+            }
+            catch (CryptographicException)
+            {
+                return new CardRequisitesDTO
+                {
+                    full_name = appUser.Client.FullName!,
+                    Pan = "Invalid Pan",
+                    ExpiryDate = card.ExpiryDate
+                };
+            }
             var result = new CardRequisitesDTO { 
                 full_name = appUser.Client.FullName!,
                 Pan = pan_string,
