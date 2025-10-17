@@ -9,21 +9,17 @@ namespace Application.Services.TransactionServices
     {
         private readonly IAppUserRepository _appUserRepository;
         private readonly IAccountRepository _accountRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ITransactionRepository _transactionRepository;
-        private const decimal daily_limit = 2000000m;
-        private static readonly TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
-        private DateTime KazNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-        private DateOnly KazToday => DateOnly.FromDateTime(KazNow);
+        private readonly ITransactionProcessor _transactionProcessor;
+        private readonly CheckLimit _checkLimit;
         public TransferService(IAppUserRepository appUserRepository
             ,IAccountRepository accountRepository
-            ,IUserRepository userRepository
-            ,ITransactionRepository transactionRepository)
+            ,CheckLimit checkLimit
+            ,ITransactionProcessor transactionProcessor)
         {
             _appUserRepository = appUserRepository;
             _accountRepository = accountRepository;
-            _userRepository = userRepository;
-            _transactionRepository = transactionRepository;
+            _checkLimit = checkLimit;
+            _transactionProcessor = transactionProcessor;
         }
         public async Task<TransferResponseDTO> TransferAsync(string appUserId, string iban, decimal amount, string lastNumbers)
         {
@@ -40,7 +36,7 @@ namespace Application.Services.TransactionServices
                     message = "Insufficient funds"
                 };
             }
-            var resultOfCheck = checkLimit(fromAccount, amount);
+            var resultOfCheck = _checkLimit.checkLimit(fromAccount, amount);
             if (resultOfCheck.Item1 == false)
             {
                 return new TransferResponseDTO
@@ -57,35 +53,7 @@ namespace Application.Services.TransactionServices
                     message = "Recipient account was not found"
                 };
             }
-            using (var tx = await _transactionRepository.BeginTransactionAsync())
-            {
-                try
-                {
-                    toAccount.Deposit(amount);
-                    fromAccount.TransferOut(amount);
-                    fromAccount.TransferredLastDay += amount;
-                    fromAccount.LastTransferDateKz = KazToday;
-                    var transaction = new Transaction
-                    {
-                        Id = Guid.NewGuid(),
-                        From = fromAccount.Iban.ToString(),
-                        To = toAccount.Iban.ToString(),
-                        ClientId = appUser!.Client.Id,
-                        Amount = amount,
-                        CreatedAt = DateTime.UtcNow,
-                        Type = "Transfer"
-                    };
-                    await _transactionRepository.AddTransaction(transaction);
-                    await _userRepository.SaveChangesAsync();
-
-                    await tx.CommitAsync();
-                }
-                catch
-                {
-                    await tx.RollbackAsync();
-                    throw;
-                }
-            }
+            await _transactionProcessor.ProcessTransferAsync(appUser, fromAccount, toAccount, amount);
 
             return new TransferResponseDTO
             {
@@ -93,21 +61,6 @@ namespace Application.Services.TransactionServices
                 transferredAmount = amount,
                 remainingBalance = fromAccount.Balance
             };
-
-        }
-        private (bool, decimal?) checkLimit(Account account, decimal amount)
-        {
-            if (account.LastTransferDateKz != KazToday)
-            {
-                account.TransferredLastDay = 0m;
-                account.LastTransferDateKz = KazToday;
-            }
-            if (account.TransferredLastDay + amount > daily_limit)
-            {
-                var canDeposit = daily_limit - account.TransferredLastDay;
-                return (false, canDeposit);
-            }
-            return (true, null);
         }
         private async Task<AccountLookupResult> findAccount(string appUserId, string lastNumbers)
         {

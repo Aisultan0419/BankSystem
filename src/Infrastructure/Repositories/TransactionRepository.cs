@@ -25,11 +25,30 @@ namespace Infrastructure.Repositories
             {
                 await _dbContext.Transactions.AddAsync(transaction);
             }
-            public async Task<List<TransactionsGetDTO>> GetTransactions(Client client)
+            public async Task<List<TransactionsGetDTO>> GetTransactions(Client client, TransactionHistoryQueryDTO thqDTO)
             {
-                var result = await _dbContext.Transactions
+                var query = _dbContext.Transactions
                 .AsNoTracking()
-                .Where(t => t.ClientId == client.Id)
+                .Where(t => t.ClientId == client.Id);
+            if (thqDTO.startDate.HasValue)
+            {
+                var start = DateTime.SpecifyKind(thqDTO.startDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                query = query.Where(t => t.CreatedAt >= start);
+            }
+
+            if (thqDTO.endDate.HasValue)
+            {
+                var exclusiveEnd = DateTime.SpecifyKind(thqDTO.endDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                query = query.Where(t => t.CreatedAt < exclusiveEnd);
+            }
+
+            if (thqDTO.pageNumber.HasValue && thqDTO.pageSize.HasValue)
+                {
+                    query = query
+                    .Skip((thqDTO.pageNumber.Value - 1) * thqDTO.pageSize.Value)
+                    .Take(thqDTO.pageSize.Value);
+                }
+                var result = await query
                 .Select(t => new TransactionsGetDTO
                 {
                     From = t.From,
@@ -37,9 +56,8 @@ namespace Infrastructure.Repositories
                     Amount = t.Amount,
                     CreatedAt = t.CreatedAt,
                     Type = t.Type
-                }) 
+                })
                 .ToListAsync();
-
                 return result;
             }
 

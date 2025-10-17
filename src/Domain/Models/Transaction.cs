@@ -14,5 +14,5 @@
         public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
         public string Type { get; set; } = null!;
 
-    }
+    } 
 }

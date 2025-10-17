@@ -5,6 +5,6 @@ namespace Application.Interfaces.Services
 {
     public interface ITransactionsGetService
     {
-        Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(string appUserId);
+        Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(string appUserId, TransactionHistoryQueryDTO thqDTO);
     }
 }

@@ -65,6 +65,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 Log.Logger = LoggingConfiguration.CreateLogger("Logs/log-.txt");
+builder.Services.AddHttpClient();
 builder.Host.UseSerilog();
 builder.Services.AddScoped<IAppUserService, AppUserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -80,12 +81,15 @@ builder.Services.AddScoped<ITransferService, TransferService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 builder.Services.AddScoped<ITransactionsGetService, TransactionsGetService>();
 builder.Services.AddScoped<IGetCardService, GetCardService>();
 builder.Services.AddScoped<IPanService, Pan_generation>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<ITransactionProcessor, TransactionProcessor>();
 builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IIBanService, IbanService>();
+builder.Services.AddScoped<CheckLimit>();
 builder.Logging.AddConsole();
 
 builder.Services.AddFluentValidationAutoValidation()
@@ -96,6 +100,7 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginViaPasswordValidator>(
 builder.Services.AddValidatorsFromAssemblyContaining<LoginViaPinValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<LastNumberValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<IINValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<TransactionGetHistoryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<TransferQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<DepositQueryValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<AccountGenerationValidator>();
