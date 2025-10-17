@@ -16,6 +16,11 @@ namespace BankSystemAPI.Controllers
             _appUserService = appUserService;
             _logger = logger;
         }
+        [HttpGet]
+        public string getInfo()
+        {
+            return "{\r\n  \"email\": \"kalebekaisultan@gmail.com\",\r\n  \"pinCode\": \"0185\"\r\n}";
+        }
         [HttpPost]
         public async Task<ActionResult<RegistrationStatusDTO>> CreateAppUser([FromBody] AppUserCreateDTO appUserDTO)
         {

@@ -7,6 +7,6 @@ namespace Application.Interfaces.Repositories
     {
         Task<IDbContextTransaction> BeginTransactionAsync();
         Task AddTransaction(Transaction transaction);
-        Task<List<TransactionsGetDTO>> GetTransactions(Client client);
+        Task<List<TransactionsGetDTO>> GetTransactions(Client client, TransactionHistoryQueryDTO thqDTO);
     }
 }

@@ -10,10 +10,10 @@ namespace Application.Services.TransactionServices
         private readonly ITransactionRepository _transactionRepository;
         public TransactionsGetService(IAppUserRepository appUserRepository, ITransactionRepository transactionRepository)
         {
-            _appUserRepository = appUserRepository;
+            _appUserRepository = appUserRepository; 
             _transactionRepository = transactionRepository;
         }
-        public async Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(string appUserId)
+        public async Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(string appUserId, TransactionHistoryQueryDTO thqDTO)
         {
             Guid.TryParse(appUserId, out var appUserGuid);
             var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
@@ -28,7 +28,7 @@ namespace Application.Services.TransactionServices
             }
             var client = appUser.Client;
 
-            var result = await _transactionRepository.GetTransactions(client);
+            var result = await _transactionRepository.GetTransactions(client, thqDTO);
             if (result == null)
             {
                 return new ApiResponse<List<TransactionsGetDTO>>
