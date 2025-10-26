@@ -1,8 +1,5 @@
 ﻿
 namespace Application.DTO.ClientDTO
 {
-    public class IINDTO
-    {
-        public required string IIN { get; set; }
-    }
+    public record IINDTO(string IIN);
 }

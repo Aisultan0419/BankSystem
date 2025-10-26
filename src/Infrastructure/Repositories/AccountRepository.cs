@@ -31,12 +31,13 @@ namespace Infrastructure.Repositories
             var list = await _context.Accounts
             .AsNoTracking()
             .Where(a => a.ClientId == clientId)
-            .SelectMany(a => a.Cards.Select(card => new GetCardDTO
-            {
-                PanMasked = card.PanMasked,
-                Balance = a.Balance,
-                Status = card.Status.ToString(),
-            }))
+            .SelectMany(a => a.Cards.Select(card => new GetCardDTO(
+                card.PanMasked,
+                card.Status.ToString(),
+                a.Balance,
+                "KZT"
+                )
+            ))
             .ToListAsync();
             return list;
         }

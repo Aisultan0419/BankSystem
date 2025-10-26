@@ -17,6 +17,27 @@ namespace Infrastructure.DbContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+
+            modelBuilder.Entity<Account>()
+                .Property(a => a.DepositedLastDayMoney)
+                .HasConversion(
+                    money => money == null ? 0m : money.Value.Amount,
+                    value => new Money(value, "KZT")
+                );
+            modelBuilder.Entity<Account>()
+                .Property(a => a.TransferredLastDayMoney)
+                .HasConversion(
+                    money => money == null ? 0m : money.Value.Amount,
+                    value => new Money(value, "KZT")
+                );
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.AmountMoney)
+                .HasConversion(
+                    money => money.Amount,
+                    value => new Money(value, "KZT")
+                );
             modelBuilder.Entity<AppUser>()
             .HasMany(a => a.refreshTokens)
             .WithOne(b => b.AppUser)
