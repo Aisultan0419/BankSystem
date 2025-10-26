@@ -3,6 +3,7 @@ using System;
 using Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251021131945_FinalMigration")]
+    partial class FinalMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,9 +40,6 @@ namespace Infrastructure.Migrations
                     b.Property<decimal?>("DepositedLastDay")
                         .HasColumnType("numeric");
 
-                    b.Property<decimal?>("DepositedLastDayMoney")
-                        .HasColumnType("numeric");
-
                     b.Property<string>("Iban")
                         .IsRequired()
                         .HasColumnType("text");
@@ -51,9 +51,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("date");
 
                     b.Property<decimal?>("TransferredLastDay")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("TransferredLastDayMoney")
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
@@ -235,9 +232,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("AmountMoney")
                         .HasColumnType("numeric");
 
                     b.Property<Guid>("ClientId")

@@ -1,11 +1,6 @@
 ﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services.TransactionServices
 {
@@ -30,9 +25,10 @@ namespace Application.Services.TransactionServices
             {
                 try
                 {
+                    var money = new Money(amount, fromAccount.Currency ?? "KZT");
                     toAccount.Deposit(amount);
                     fromAccount.TransferOut(amount);
-                    fromAccount.TransferredLastDay += amount;
+                    fromAccount.TransferredLastDayMoney = (fromAccount.TransferredLastDayMoney ?? new Money(0m, money.Currency)) + money;
                     fromAccount.LastTransferDateKz = KazToday;
 
                     var transaction = new Transaction
@@ -41,7 +37,7 @@ namespace Application.Services.TransactionServices
                         From = fromAccount.Iban.ToString(),
                         To = toAccount.Iban.ToString(),
                         ClientId = appUser!.Client.Id,
-                        Amount = amount,
+                        AmountMoney = money,
                         CreatedAt = DateTime.UtcNow,
                         Type = "Transfer"
                     };

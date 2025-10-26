@@ -6,8 +6,5 @@ using System.Threading.Tasks;
 
 namespace Application.DTO.CardDTO
 {
-    public class LastNumbersDTO
-    {
-        public required string LastNumbers { get; set; }
-    }
+    public record LastNumbersDTO(string LastNumbers);
 }

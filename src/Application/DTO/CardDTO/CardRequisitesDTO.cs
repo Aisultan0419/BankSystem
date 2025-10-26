@@ -8,10 +8,9 @@ using Domain.Models;
 
 namespace Application.DTO.CardDTO
 {
-    public class CardRequisitesDTO
-    {
+    public class CardRequisitesDTO { 
         public string full_name { get; init; } = null!;
         public string Pan { get; init; } = null!;
-        public string? ExpiryDate { get; init; }
+        public string? ExpiryDate { get; init; } 
     }
 }

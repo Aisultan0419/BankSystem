@@ -7,12 +7,10 @@ using Domain.Enums;
 
 namespace Application.DTO.CardDTO
 {
-    public class GetCardDTO
-    {
-        public string? PanMasked { get; init; }
-        public string? Status { get; init; }
-        public decimal Balance { get; init; }
-        public string? Currency { get; } = "KZT";
-
-    }
+    public record GetCardDTO(
+        string? PanMasked,
+        string? Status,
+        decimal Balance,
+        string? Currency = "KZT"
+    );
 }

@@ -1,8 +1,5 @@
 ﻿using Domain.Enums;
 namespace Application.DTO.AccountDTO
 {
-    public class AccountCreateQueryDTO
-    {
-        public AccountType AccountType { get; set; } 
-    }
+    public record AccountCreateQueryDTO(AccountType AccountType);
 }
