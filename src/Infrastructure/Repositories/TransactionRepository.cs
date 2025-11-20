@@ -21,7 +21,12 @@ namespace Infrastructure.Repositories
             {
                 return await _dbContext.Database.BeginTransactionAsync();
             }
-            public async Task AddTransaction(Transaction transaction)
+            public IExecutionStrategy CreateExecutionStrategy()
+            {
+                return _dbContext.Database.CreateExecutionStrategy();
+            }
+
+        public async Task AddTransaction(Transaction transaction)
             {
                 await _dbContext.Transactions.AddAsync(transaction);
             }
