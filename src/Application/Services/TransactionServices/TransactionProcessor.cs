@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Microsoft.EntityFrameworkCore;
 using Domain.Models;
 
 namespace Application.Services.TransactionServices
@@ -21,38 +22,43 @@ namespace Application.Services.TransactionServices
 
         public async Task ProcessTransferAsync(AppUser appUser, Account fromAccount, Account toAccount, decimal amount)
         {
-            using (var tx = await _transactionRepository.BeginTransactionAsync())
+            var strategy = _transactionRepository.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
             {
-                try
+                await using (var tx = await _transactionRepository.BeginTransactionAsync())
                 {
-                    var money = new Money(amount, fromAccount.Currency ?? "KZT");
-                    toAccount.Deposit(amount);
-                    fromAccount.TransferOut(amount);
-                    fromAccount.TransferredLastDayMoney = (fromAccount.TransferredLastDayMoney ?? new Money(0m, money.Currency)) + money;
-                    fromAccount.LastTransferDateKz = KazToday;
-
-                    var transaction = new Transaction
+                    try
                     {
-                        Id = Guid.NewGuid(),
-                        From = fromAccount.Iban.ToString(),
-                        To = toAccount.Iban.ToString(),
-                        ClientId = appUser!.Client.Id,
-                        AmountMoney = money,
-                        CreatedAt = DateTime.UtcNow,
-                        Type = "Transfer"
-                    };
+                        var money = new Money(amount, fromAccount.Currency ?? "KZT");
+                        toAccount.Deposit(amount);
+                        fromAccount.TransferOut(amount);
+                        fromAccount.TransferredLastDayMoney = (fromAccount.TransferredLastDayMoney ?? new Money(0m, money.Currency)) + money;
+                        fromAccount.LastTransferDateKz = KazToday;
 
-                    await _transactionRepository.AddTransaction(transaction);
-                    await _userRepository.SaveChangesAsync();
+                        var transaction = new Transaction
+                        {
+                            Id = Guid.NewGuid(),
+                            From = fromAccount.Iban.ToString(),
+                            To = toAccount.Iban.ToString(),
+                            ClientId = appUser!.Client.Id,
+                            AmountMoney = money,
+                            CreatedAt = DateTime.UtcNow,
+                            Type = "Transfer"
+                        };
 
-                    await tx.CommitAsync();
+                        await _transactionRepository.AddTransaction(transaction);
+                        await _userRepository.SaveChangesAsync();
+
+                        await tx.CommitAsync();
+                    }
+                    catch
+                    {
+                        await tx.RollbackAsync();
+                        throw;
+                    }
                 }
-                catch
-                {
-                    await tx.RollbackAsync();
-                    throw;
-                }
-            }
+            });
         }
     }
 }

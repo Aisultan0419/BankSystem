@@ -118,8 +118,18 @@ builder.Services.Configure<JwtOptions>(opts =>
 
 builder.Services.AddApiAuthentication(builder.Configuration);
 
-builder.Services.AddDbContext<AppDbContext>(options =>  
-    options.UseNpgsql("Host = localhost; Port = 5432; Database = BankSystem; Username = postgres; Password = 210624"));
+var connectionString =
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string not found. Set ConnectionStrings:DefaultConnection or env ConnectionStrings__DefaultConnection");
+
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString, npgsqlOptions =>
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorCodesToAdd: null)));
 builder.Services.AddScoped<IJwtProvider, JwtProvider>();
 builder.Services.AddScoped<IRefreshTokenProvider, RefreshTokenProvider>();
 builder.Services.AddSingleton<IPanEncryptor>(sp =>
@@ -168,4 +178,21 @@ app.UseCookiePolicy(new CookiePolicyOptions
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate(); 
+        logger.LogInformation("Database migrations applied.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+      
+        throw;
+    }
+}
+
 app.Run();

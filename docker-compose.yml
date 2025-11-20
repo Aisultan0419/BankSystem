@@ -1,0 +1,33 @@
+
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 210624
+      POSTGRES_DB: BankSystem
+    ports:
+      - "5440:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  banksystemapi:
+    build:
+      context: .
+      dockerfile: src/BankSystemAPI/Dockerfile     
+    environment:
+      - JWT_SECRET=n4R7pDk8qZ1sW5xY2vB3cV7tJ0mN8fH4K928
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=BankSystem;Username=postgres;Password=210624
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
