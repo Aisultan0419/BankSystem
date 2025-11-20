@@ -141,14 +141,12 @@ builder.Services.AddSingleton<IPanEncryptor>(sp =>
     return new PanEncryptor(key);
 });
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
-    {
+
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "My Bank API");
         });
-}
 app.UseMiddleware<LoggerMiddleware>();
 app.UseExceptionHandler(context => {
     context.Run(async content =>
