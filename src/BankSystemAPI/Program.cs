@@ -215,6 +215,7 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
+app.MapGet("/", ctx => { ctx.Response.Redirect("/swagger"); return Task.CompletedTask; });
 
 
 app.Run();
