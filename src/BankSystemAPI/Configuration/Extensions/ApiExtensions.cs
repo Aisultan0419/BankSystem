@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace BankSystemAPI.Extensions
+namespace BankSystemAPI.Configuration.Extensions
 {
     public static class ApiExtensions
     {
