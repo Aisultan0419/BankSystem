@@ -10,7 +10,5 @@ namespace Application.Interfaces.Services
     public interface IIBanService
     {
         Task<string> GetIban(AccountType accountType, Guid Id);
-        int Mod97(string input);
-        string Digitalization(string letters);
     }
 }

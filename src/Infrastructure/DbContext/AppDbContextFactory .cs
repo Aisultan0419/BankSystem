@@ -9,7 +9,7 @@ namespace Infrastructure
         {
             var optionBuilder = new DbContextOptionsBuilder<AppDbContext>();
             var conn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
-           ?? "Host=localhost;Port=5432;Database=BankSystem;Username=postgres;Password=210624";
+           ?? "Host=localhost;Port=5432;Database=BankSystemDB;Username=postgres;Password=210624";
             optionBuilder.UseNpgsql(conn);
             return new AppDbContext(optionBuilder.Options);
         }

@@ -32,7 +32,7 @@ namespace Application.Services.AccountServices
 
             return iban;
         }
-        public int Mod97(string input)
+        private int Mod97(string input)
         {
             string remainder = input;
             long block = 0;
@@ -45,7 +45,7 @@ namespace Application.Services.AccountServices
             }
             return (int)block;
         }
-        public string Digitalization(string letters)
+        private string Digitalization(string letters)
         {
             StringBuilder stringBuilder = new StringBuilder();
 
