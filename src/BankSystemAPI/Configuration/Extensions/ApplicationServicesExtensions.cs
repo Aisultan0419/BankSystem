@@ -8,6 +8,7 @@ using Application.Services.AuthServices;
 using Application.Services.CardServices;
 using Application.Services.ClientServices;
 using Application.Services.TransactionServices;
+using ApplicationTests.TransactionServicesTests.TransactionTests;
 using Infrastructure;
 using Infrastructure.JWT;
 using Infrastructure.PanServices;
@@ -48,6 +49,9 @@ namespace BankSystemAPI.Configuration.Extensions
             services.AddScoped<IAppUserRepository, AppUserRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+            services.AddScoped<IExecutionStrategyRunner, EfExecutionStrategyRunner>();
+
 
             return services;
         }

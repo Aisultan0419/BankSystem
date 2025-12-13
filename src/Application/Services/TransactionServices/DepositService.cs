@@ -1,9 +1,10 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using ApplicationTests.TransactionServicesTests.TransactionTests;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
+
 
 namespace Application.Services.TransactionServices
 {
@@ -14,6 +15,7 @@ namespace Application.Services.TransactionServices
         private readonly IAccountRepository _accountRepository;
         private readonly CheckLimit _checkLimit;
         private readonly ITransactionRepository _transactionRepository;
+        private readonly IExecutionStrategyRunner _exRunner;
         private static readonly TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
         private DateTime KazNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
         private DateOnly KazToday => DateOnly.FromDateTime(KazNow);
@@ -21,13 +23,15 @@ namespace Application.Services.TransactionServices
             ,IUserRepository userRepository
             ,IAccountRepository accountRepository
             ,ITransactionRepository transactionRepository
-            ,CheckLimit checkLimit)
+            ,CheckLimit checkLimit
+            ,IExecutionStrategyRunner exRunner)
         {
             _appUserRepository = appUserRepository;
             _userRepository = userRepository;
             _accountRepository = accountRepository;
             _transactionRepository = transactionRepository;
             _checkLimit = checkLimit;
+            _exRunner = exRunner;
         }
         private const decimal daily_limit = 2000000m;
         public async Task<DepositResponseDTO> DepositAsync(decimal amount, string appUserId, string lastNumbers)
@@ -60,8 +64,7 @@ namespace Application.Services.TransactionServices
                     message = $"You can deposit only {resultOfCheck.Item2}"
                 };
             }
-            var strategy = _transactionRepository.CreateExecutionStrategy();
-            await strategy.ExecuteAsync(async () =>
+            await _exRunner.ExecuteAsync(async () =>
             {
                 await using (var tx = await _transactionRepository.BeginTransactionAsync())
                 {
