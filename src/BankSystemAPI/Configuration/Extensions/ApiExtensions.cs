@@ -8,15 +8,18 @@ namespace BankSystemAPI.Configuration.Extensions
 {
     public static class ApiExtensions
     {
-        public static void AddApiAuthentication(this IServiceCollection services, IConfiguration configuration)
+        public static void AddApiAuthentication(this IServiceCollection services, IConfiguration configuration
+            ,IHostEnvironment env)
         {
             var section = configuration.GetSection("JwtOptions");
             services.Configure<JwtOptions>(section);
 
             var jwtOptions = section.Get<JwtOptions>() ?? new JwtOptions();
-            jwtOptions.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET")
-                                    ?? throw new InvalidOperationException("Jwt secret not set");
-
+            if (env.IsDevelopment())
+            {
+                jwtOptions.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET")
+                                        ?? throw new InvalidOperationException("Jwt secret not set");
+            }
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {

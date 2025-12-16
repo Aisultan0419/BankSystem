@@ -40,7 +40,7 @@ namespace BankSystemAPI.Configuration.Extensions
             services.AddScoped<IPanService, Pan_generation>();
             services.AddScoped<IJwtProvider, JwtProvider>();
             services.AddScoped<IRefreshTokenProvider, RefreshTokenProvider>();
-
+            services.AddScoped<IFindAccountService, FindAccount>();
 
 
             services.AddScoped<IUserRepository, UserRepository>();

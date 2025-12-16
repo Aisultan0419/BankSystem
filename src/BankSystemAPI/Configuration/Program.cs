@@ -7,7 +7,7 @@ builder.Services.AddApiBasics(builder.Configuration);
 builder.Services.AddApiLogging(builder.Configuration);
 builder.Host.UseApiLogging();
 
-builder.Services.AddApiAuthentication(builder.Configuration);
+builder.Services.AddApiAuthentication(builder.Configuration, builder.Environment);
 
 builder.Services.AddPanEncryptor(builder.Configuration);
 var app = builder.Build();

@@ -11,19 +11,22 @@ namespace Application.Services.TransactionServices
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionProcessor _transactionProcessor;
         private readonly CheckLimit _checkLimit;
+        private readonly IFindAccountService _findAccountService;
         public TransferService(IAppUserRepository appUserRepository
             ,IAccountRepository accountRepository
             ,CheckLimit checkLimit
-            ,ITransactionProcessor transactionProcessor)
+            ,ITransactionProcessor transactionProcessor
+            ,IFindAccountService findAccountService)
         {
             _appUserRepository = appUserRepository;
             _accountRepository = accountRepository;
             _checkLimit = checkLimit;
             _transactionProcessor = transactionProcessor;
+            _findAccountService = findAccountService;
         }
         public async Task<TransferResponseDTO> TransferAsync(string appUserId, string iban, decimal amount, string lastNumbers)
         {
-            var lookup = await findAccount(appUserId, lastNumbers);
+            var lookup = await _findAccountService.findAccount(appUserId, lastNumbers);
             if (!lookup.Success)
                 return new TransferResponseDTO { message = lookup.ErrorMessage };
 
@@ -61,40 +64,6 @@ namespace Application.Services.TransactionServices
                 transferredAmount = amount,
                 remainingBalance = fromAccount.Balance
             };
-        }
-        private async Task<AccountLookupResult> findAccount(string appUserId, string lastNumbers)
-        {
-            if (!Guid.TryParse(appUserId, out var appUserGuid))
-                return AccountLookupResult.Fail("Invalid user id format");
-
-            var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
-            if (appUser == null)
-                return AccountLookupResult.Fail("AppUser was not found");
-
-            var card = await _accountRepository.GetRequisitesDTOAsync(appUser.Client.Id, lastNumbers);
-            if (card == null)
-                return AccountLookupResult.Fail("Card was not found");
-
-            var account = await _accountRepository.GetAccountById(card.AccountId);
-            if (account == null)
-                return AccountLookupResult.Fail("Account was not found");
-
-            return AccountLookupResult.Ok(account, appUser);
-        }
-        private class AccountLookupResult
-        {
-            public bool Success { get; private set; }
-            public string? ErrorMessage { get; private set; }
-            public Account? Account { get; private set; }
-            public AppUser? AppUser { get; private set; }
-
-            private AccountLookupResult() { }
-
-            public static AccountLookupResult Fail(string message) =>
-                new AccountLookupResult { Success = false, ErrorMessage = message };
-
-            public static AccountLookupResult Ok(Account account, AppUser appUser) =>
-                new AccountLookupResult { Success = true, Account = account, AppUser = appUser };
         }
     }
 }
