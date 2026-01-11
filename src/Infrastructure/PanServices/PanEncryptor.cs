@@ -1,7 +1,7 @@
 ﻿
 using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces;
+using Application.Interfaces.Services.Pans;
 using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.PanServices

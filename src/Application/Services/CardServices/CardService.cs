@@ -1,8 +1,8 @@
 ﻿using Domain.Models;
 using Domain.Enums;
-using Application.Interfaces.Services;
-using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Services.Cards;
+using Application.Interfaces.Services.Pans;
 namespace Application.Services.CardServices
 {
     public class CardService : ICardService

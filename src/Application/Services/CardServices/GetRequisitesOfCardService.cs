@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Application.Interfaces;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
 using Application.DTO.CardDTO;
 using System.Security.Cryptography;
+using Application.Interfaces.Services.Cards;
+using Application.Interfaces.Services.Pans;
 
 namespace Application.Services.CardServices
 {

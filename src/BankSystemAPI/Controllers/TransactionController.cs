@@ -1,12 +1,10 @@
 ﻿using Application.DTO.TransactionDTO;
-using Application.Interfaces.Services;
-using AutoMapper.Configuration.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using Application.Responses;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
+using Application.Interfaces.Services.Transactions;
 
 namespace BankSystemAPI.Controllers
 {
@@ -19,31 +17,26 @@ namespace BankSystemAPI.Controllers
         private readonly ILogger<TransactionController> _logger;
         private readonly ITransactionsGetService _transactionsGetService;
         private readonly IPurchaseService _purchaseService;
+        private readonly ISavingAccountService _savAccountService;
         public TransactionController(IDepositService depositService
             , ITransferService transferService
             , ILogger<TransactionController> logger
             , ITransactionsGetService transactionsGetService
-            , IPurchaseService purchaseService)
+            , IPurchaseService purchaseService
+            , ISavingAccountService savAccountService)
         {
             _depositService = depositService;
             _transferService = transferService;
             _logger = logger;
             _transactionsGetService = transactionsGetService;
             _purchaseService = purchaseService;
+            _savAccountService = savAccountService;
         }
         [Authorize]
         [HttpPost("deposit")]
         public async Task<ActionResult<DepositResponseDTO>> Deposit([FromBody] DepositQueryDTO depositQueryDTO)
         {
             _logger.LogInformation("Deposit endpoint has started...");
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-            {
-                _logger.LogInformation("User is not authenticated.");
-                return new DepositResponseDTO
-                {
-                    message = "User is not authenticated"
-                };
-            }
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _depositService.DepositAsync(depositQueryDTO.Amount, appUserIdClaim!, depositQueryDTO.LastNumbers);
@@ -60,14 +53,6 @@ namespace BankSystemAPI.Controllers
         public async Task<ActionResult<TransferResponseDTO>> Transfer([FromBody] TransferQueryDTO transferQueryDTO)
         {
             _logger.LogInformation("Transfer endpoint has started...");
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-            {
-                _logger.LogInformation("User is not authenticated.");
-                return new TransferResponseDTO
-                {
-                    message = "User is not authenticated"
-                };
-            }
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var result = await _transferService.TransferAsync(appUserIdClaim!
@@ -88,11 +73,6 @@ namespace BankSystemAPI.Controllers
         public async Task<ActionResult<List<TransactionsGetDTO>>> GetTransactions([FromQuery] TransactionHistoryQueryDTO transactionHistoryQueryDTO)
         {
             _logger.LogInformation("GetTransactions endpoint has started...");
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-            {
-                _logger.LogInformation("User is not authenticated.");
-                return new List<TransactionsGetDTO>();
-            }
             var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                                   ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -126,5 +106,21 @@ namespace BankSystemAPI.Controllers
             _logger.LogInformation("Purchase successful for OrderId: {orderId}", purchaseQueryDTO.OrderId);
             return Ok(result);
         }
+        [Authorize]
+        [HttpPost("saving-account")]
+        public async Task<ActionResult<ApiResponse<SavingAccountResponseDTO>>> SavingAccountEndpoint([FromBody] SavingsRequestDTO savingReqDTO)
+        {
+            _logger.LogInformation("Saving account process endpoint has started...");
+            var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _savAccountService.CreateSavingAccountAsync(appUserIdClaim!, savingReqDTO);
+            if (result.IsSuccess is false)
+            {
+                _logger.LogWarning("Saving account process failed: {message}", result.Message);
+                return BadRequest(result.Message);
+            }
+            return Ok(result.Data);
+        }
+
     }
 }

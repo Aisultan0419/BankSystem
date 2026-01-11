@@ -1,7 +1,8 @@
 ﻿using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
 using Microsoft.EntityFrameworkCore;
 using Domain.Models;
+using Domain.Models.Accounts;
+using Application.Interfaces.Services.Transactions;
 
 namespace Application.Services.TransactionServices
 {

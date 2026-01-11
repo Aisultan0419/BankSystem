@@ -5,8 +5,8 @@ using Domain.Enums;
 using Domain.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Application.Interfaces.Services;
 using Application.DTO.AuthDTO;
+using Application.Interfaces.Services.Auths;
 namespace Application.Services.AuthServices
 {
     public class AuthService : IAuthService

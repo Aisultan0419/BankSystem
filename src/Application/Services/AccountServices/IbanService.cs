@@ -1,7 +1,8 @@
-﻿using Application.Interfaces.Services;
-using System.Text;
+﻿using System.Text;
 using Application.Interfaces.Repositories;
 using Domain.Enums;
+using System.Numerics;
+using Application.Interfaces.Services.Accounts;
 namespace Application.Services.AccountServices
 {
     public class IbanService : IIBanService
@@ -13,7 +14,7 @@ namespace Application.Services.AccountServices
         }            
         public async Task<string> GetIban(AccountType accountType, Guid Id)
         {
-            string unique_id = (Math.Abs(Id.GetHashCode()) % 10000).ToString("D4");
+            string unique_id = ((BigInteger.Abs(new BigInteger(Id.ToByteArray()))).ToString())[^4..];
             string order_number = await _userRepository.GetOrderNumber() 
                 ?? throw new InvalidOperationException("Failed to generate account order number");
             string account_type = ((int)accountType).ToString("D3");

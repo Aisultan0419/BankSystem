@@ -1,6 +1,7 @@
 ﻿using Application.DTO.ClientDTO;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Accounts;
+using Application.Interfaces.Services.Clients;
 using Domain.Enums;
 using Domain.Models;
 

@@ -1,6 +1,7 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Accounts;
+using Application.Interfaces.Services.Transactions;
 using Domain.Models;
 using System.Runtime.CompilerServices;
 namespace Application.Services.TransactionServices

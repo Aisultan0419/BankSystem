@@ -1,6 +1,7 @@
 ﻿using Application.DTO.CardDTO;
 using Application.Interfaces.Repositories;
 using Domain.Models;
+using Domain.Models.Accounts;
 using Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,9 +23,9 @@ namespace Infrastructure.Repositories
         {
             await _context.Cards.AddAsync(card);
         }
-        public async Task AddAccount(Account account)
+        public async Task AddAccount(CurrentAccount account)
         {
-            await _context.Accounts.AddAsync(account);
+            await _context.CurrentAccounts.AddAsync(account);
         }
         public async Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId)
         {
@@ -51,7 +52,7 @@ namespace Infrastructure.Repositories
             var result = await _context.Clients
                 .AsNoTracking()
                 .Include(ac => ac.Accounts)
-                    .ThenInclude(ca => ca.Cards)
+                    .ThenInclude(ca => ca!.Cards)
                         .ThenInclude(ka => ka.Pan)
                 .Where(cl => cl.Id == clientId)
                 .SelectMany(a => a.Accounts)
@@ -64,6 +65,33 @@ namespace Infrastructure.Repositories
         {
             var account = await _context.Accounts.Include(c => c.Client).FirstOrDefaultAsync(a => a.Iban == iban);
             return account ?? throw new ArgumentNullException();
+        }
+        public async Task AddSavingAccount(SavingAccount savingAccount)
+        {
+            await _context.SavingsAccounts.AddAsync(savingAccount);
+        }
+        public async Task<bool> IsDayForAccrualInterestDeposit(Account account)
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var alreadyAccruedThisMonth = await _context.InterestAccrualHistory
+                .AsNoTracking()
+                .AnyAsync(h => h.AccountId == account.Id
+                            && h.AccrualDate.Year == today.Year
+                            && h.AccrualDate.Month == today.Month);
+            return today.Day == 1 && !alreadyAccruedThisMonth;
+        }
+
+        public async Task<bool> CheckForIdempotencyOfAccrualInterest(Account account)
+        {
+            var firstRecord = await _context.InterestAccrualHistory
+                .AsNoTracking()
+                .Where(a => a.AccountId == account.Id && a.AccrualDate == DateOnly.FromDateTime(DateTime.Today))
+                .FirstOrDefaultAsync();
+            if (firstRecord == default)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

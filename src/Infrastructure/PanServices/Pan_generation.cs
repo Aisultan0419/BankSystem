@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Pans;
 using Domain.Enums;
 using Domain.Models;
 namespace Infrastructure.PanServices

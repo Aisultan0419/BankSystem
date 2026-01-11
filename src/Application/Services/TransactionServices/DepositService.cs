@@ -1,7 +1,6 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
-using ApplicationTests.TransactionServicesTests.TransactionTests;
+using Application.Interfaces.Services.Transactions;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 

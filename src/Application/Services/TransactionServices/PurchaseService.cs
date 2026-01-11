@@ -1,6 +1,7 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services;
+using Application.Interfaces.Services.Transactions;
 using Application.Responses;
 using System.Net.Http.Json;
 

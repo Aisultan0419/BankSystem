@@ -22,7 +22,7 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Models.Account", b =>
+            modelBuilder.Entity("Domain.Models.Accounts.Account", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,6 +39,11 @@ namespace Infrastructure.Migrations
 
                     b.Property<decimal?>("DepositedLastDayMoney")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("character varying(21)");
 
                     b.Property<string>("Iban")
                         .IsRequired()
@@ -61,6 +66,35 @@ namespace Infrastructure.Migrations
                     b.HasIndex("ClientId");
 
                     b.ToTable("Accounts");
+
+                    b.HasDiscriminator().HasValue("Account");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.InterestAccrualHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("AccrualDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("AmountAccrued")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("InterestAccrualHistory");
                 });
 
             modelBuilder.Entity("Domain.Models.AppUser", b =>
@@ -167,6 +201,34 @@ namespace Infrastructure.Migrations
                     b.ToTable("Clients");
                 });
 
+            modelBuilder.Entity("Domain.Models.Outbox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ProcessedOn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutBoxes");
+                });
+
             modelBuilder.Entity("Domain.Models.Pan", b =>
                 {
                     b.Property<Guid>("Id")
@@ -265,7 +327,43 @@ namespace Infrastructure.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("Domain.Models.Account", b =>
+            modelBuilder.Entity("Domain.Models.Accounts.CurrentAccount", b =>
+                {
+                    b.HasBaseType("Domain.Models.Accounts.Account");
+
+                    b.HasDiscriminator().HasValue("CurrentAccount");
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.LockedSavingAccount", b =>
+                {
+                    b.HasBaseType("Domain.Models.Accounts.Account");
+
+                    b.Property<decimal>("AccruedInterest")
+                        .HasColumnType("numeric");
+
+                    b.HasDiscriminator().HasValue("LockedSavingAccount");
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.SavingAccount", b =>
+                {
+                    b.HasBaseType("Domain.Models.Accounts.Account");
+
+                    b.Property<decimal>("AccruedInterest")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.ToTable("Accounts", t =>
+                        {
+                            t.Property("AccruedInterest")
+                                .HasColumnName("SavingAccount_AccruedInterest");
+                        });
+
+                    b.HasDiscriminator().HasValue("SavingAccount");
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.Account", b =>
                 {
                     b.HasOne("Domain.Models.Client", "Client")
                         .WithMany("Accounts")
@@ -274,6 +372,17 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Client");
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.InterestAccrualHistory", b =>
+                {
+                    b.HasOne("Domain.Models.Accounts.Account", "Account")
+                        .WithMany("AccrualHistory")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Domain.Models.AppUser", b =>
@@ -289,10 +398,10 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Models.Card", b =>
                 {
-                    b.HasOne("Domain.Models.Account", "Account")
+                    b.HasOne("Domain.Models.Accounts.Account", "Account")
                         .WithMany("Cards")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Account");
@@ -331,8 +440,40 @@ namespace Infrastructure.Migrations
                     b.Navigation("Client");
                 });
 
-            modelBuilder.Entity("Domain.Models.Account", b =>
+            modelBuilder.Entity("Domain.Models.Accounts.SavingAccount", b =>
                 {
+                    b.OwnsOne("Domain.Models.Accounts.InterestRate", "_interestRate", b1 =>
+                        {
+                            b1.Property<Guid>("SavingAccountId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<DateOnly>("EffectiveFrom")
+                                .HasColumnType("date");
+
+                            b1.Property<DateOnly?>("EffectiveTo")
+                                .HasColumnType("date");
+
+                            b1.Property<decimal>("Rate")
+                                .HasColumnType("numeric");
+
+                            b1.Property<int>("Type")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("SavingAccountId");
+
+                            b1.ToTable("Accounts");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SavingAccountId");
+                        });
+
+                    b.Navigation("_interestRate");
+                });
+
+            modelBuilder.Entity("Domain.Models.Accounts.Account", b =>
+                {
+                    b.Navigation("AccrualHistory");
+
                     b.Navigation("Cards");
                 });
 

@@ -1,7 +1,10 @@
 ﻿using Application.Interfaces.Repositories;
-using Domain.Models;
+using Application.Interfaces.Services.Accounts;
+using Application.Interfaces.Services.Cards;
 using Domain.Enums;
-using Application.Interfaces.Services;
+using Domain.Models;
+using Domain.Models.Accounts;
+using System.Runtime.CompilerServices;
 namespace Application.Services.AccountServices
 {
     public class AccountService : IAccountService
@@ -10,7 +13,8 @@ namespace Application.Services.AccountServices
         private readonly IIBanService _ibanService;
         private readonly IAccountRepository _accountRepository;
         private readonly ICardService _cardService;
-        public AccountService(IUserRepository userRepository
+        public AccountService
+            (IUserRepository userRepository
             ,IIBanService ibanService
             ,IAccountRepository accountRepository
             ,ICardService cardService)
@@ -20,11 +24,10 @@ namespace Application.Services.AccountServices
             _accountRepository = accountRepository;
             _cardService = cardService;
         }
-
-        public async Task<Account> CreateAccount(Client client)
+        public async Task<CurrentAccount> CreateAccount(Client client)
         {
             var iban = await _ibanService.GetIban(AccountType.Current, client.Id);
-            var account = new Account
+            var account = new CurrentAccount
             {
                 Id = Guid.NewGuid(),
                 Client = client,

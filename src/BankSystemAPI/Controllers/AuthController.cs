@@ -1,8 +1,7 @@
 ﻿using Application.DTO.AuthDTO;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Auths;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Runtime.CompilerServices;
 
 
 namespace BankSystemAPI.Controllers
@@ -18,7 +17,7 @@ namespace BankSystemAPI.Controllers
             _authService = authService;
             _logger = logger;
         }
-        [HttpPost("login/pin")]
+        [HttpPost("login-pin")]
         public async Task<ActionResult<LoginStatusDTO>> LoginViaPin([FromBody] LoginViaPinDTO loginViaPinDTO)
         {
             _logger.LogInformation("LoginViaPin endpoint has started...");
@@ -39,7 +38,7 @@ namespace BankSystemAPI.Controllers
                 return Ok(result);
             }
         }
-        [HttpPost("login/password")]
+        [HttpPost("login-password")]
         public async Task<ActionResult<LoginStatusDTO>> LoginViaPassword([FromBody] LoginViaPasswordDTO loginViaPasswordDTO)
         {
             _logger.LogInformation("LoginViaPassword endpoint has started...");

@@ -1,5 +1,5 @@
 ﻿using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Accounts;
 using Application.Responses;
 
 
