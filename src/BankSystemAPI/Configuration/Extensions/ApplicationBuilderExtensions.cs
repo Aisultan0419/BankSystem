@@ -8,6 +8,7 @@
             app.UseSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "My Bank API");
+                options.InjectJavascript("/swagger-ui/swagger-autologin.js");
             });
             return app;
         }

@@ -1,4 +1,4 @@
-﻿using Application.Interfaces;
+﻿using Application.Interfaces.Services.Pans;
 using Infrastructure.PanServices;
 
 namespace BankSystemAPI.Configuration.Extensions

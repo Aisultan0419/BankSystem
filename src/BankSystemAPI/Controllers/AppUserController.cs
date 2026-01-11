@@ -1,8 +1,8 @@
-﻿using Application.Interfaces.Services;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Domain.Enums;
 using Application.DTO.AppUserDTO;
 using Application.DTO.ClientDTO;
+using Application.Interfaces.Services.AppUsers;
 namespace BankSystemAPI.Controllers
 {
     [ApiController]
@@ -15,11 +15,6 @@ namespace BankSystemAPI.Controllers
         {
             _appUserService = appUserService;
             _logger = logger;
-        }
-        [HttpGet]
-        public string getInfo()
-        {
-            return "{\r\n  \"email\": \"kalebekaisultan@gmail.com\",\r\n  \"pinCode\": \"0185\"\r\n}";
         }
         [HttpPost]
         public async Task<ActionResult<RegistrationStatusDTO>> CreateAppUser([FromBody] AppUserCreateDTO appUserDTO)

@@ -1,5 +1,5 @@
 ﻿using Application.DTO.ClientDTO;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Clients;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 

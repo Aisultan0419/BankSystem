@@ -3,9 +3,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Application.DTO.CardDTO;
 using Application.Interfaces.Services;
+using Application.Interfaces.Services.Cards;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 namespace BankSystemAPI.Controllers
 {
     [ApiController]
@@ -44,7 +44,7 @@ namespace BankSystemAPI.Controllers
             return NotFound();
         }
         [Authorize]
-        [HttpGet("cards/requisites")]
+        [HttpGet("cards-requisites")]
         public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] LastNumbersDTO lastNumbersDTO)
         {
             _logger.LogInformation("GetRequisites endpoint has started...");
@@ -64,8 +64,6 @@ namespace BankSystemAPI.Controllers
             _logger.LogInformation("Card requisites retrieved successfully.");
             return Ok(card);
         }
-
     }
-
 }
 

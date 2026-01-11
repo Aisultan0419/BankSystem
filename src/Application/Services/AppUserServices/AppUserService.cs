@@ -2,7 +2,7 @@
 using Application.DTO.ClientDTO;
 using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.AppUsers;
 using Domain.Enums;
 using Domain.Models;
 namespace Application.Services.AppUserServices

@@ -21,6 +21,7 @@ namespace BankSystemAPI.Configuration.Extensions
             services.AddValidatorsFromAssemblyContaining<TransferQueryValidator>();
             services.AddValidatorsFromAssemblyContaining<DepositQueryValidator>();
             services.AddValidatorsFromAssemblyContaining<AccountGenerationValidator>();
+            services.AddValidatorsFromAssemblyContaining<SavingAccountGenerationValidator>();
 
 
             return services;

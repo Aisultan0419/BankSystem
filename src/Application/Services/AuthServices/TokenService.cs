@@ -1,6 +1,6 @@
 ﻿using Application.Interfaces.Auth;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Auths;
 using Domain.Configuration;
 using Domain.Models;
 using Microsoft.Extensions.Options;
