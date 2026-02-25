@@ -11,28 +11,29 @@ namespace Application.Services.TransactionServices.SavingAccountCreation
     public class SavingAccountCreationTransaction : ISavingAccountCreationTransaction
     {
         private readonly ITransactionRepository _tR;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IExecutionStrategyRunner _exRunner;
         private readonly IAccountRepository _accountRepository;
+
         public SavingAccountCreationTransaction(
-            ITransactionRepository tr,
-            IUserRepository userRep,
+            ITransactionRepository tR,
+            IUnitOfWork unitOfWork,
             IExecutionStrategyRunner exRunner,
-            IAccountRepository accountRepo)
+            IAccountRepository accountRepository)
         {
-            _userRepository = userRep;
-            _tR = tr;
+            _unitOfWork = unitOfWork;
+            _tR = tR;
             _exRunner = exRunner;
-            _accountRepository = accountRepo;
+            _accountRepository = accountRepository;
         }
-       
+
         public async Task ProcessSavingAccountCreationTransaction(SavingAccount savingAccount)
         {
             await _exRunner.ExecuteAsync(async () =>
             { 
                 await using var tx = await _tR.BeginTransactionAsync();
-                await _accountRepository.AddSavingAccount(savingAccount);
-                await _userRepository.SaveChangesAsync();
+                await _unitOfWork.AddItem(savingAccount);
+                await _unitOfWork.SaveChangesAsync();
                 await tx.CommitAsync();
             });
         }

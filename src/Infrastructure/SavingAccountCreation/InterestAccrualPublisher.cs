@@ -15,16 +15,13 @@ namespace Infrastructure.SavingAccountCreation
     {
         private readonly AppDbContext _db;
         private readonly IPublishEndpoint _bus;
-        private readonly IUserRepository _userRep;
         private readonly ILogger<OutboxPublisher> _logger;
         public InterestAccrualPublisher(AppDbContext db
             , IPublishEndpoint bus
-            , IUserRepository userRep
             , ILogger<OutboxPublisher> logger)
         {
             _db = db;
             _bus = bus;
-            _userRep = userRep;
             _logger = logger;
         }
         public async Task<int> PublishAccountsForAccrualInterest(int limit, CancellationToken ct)

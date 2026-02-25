@@ -3,36 +3,42 @@ using Application.Interfaces.Services.Transactions;
 using Domain.Models.Accounts;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
+using System.Data;
 namespace Application.Services.TransactionServices.SavingAccountCreation
 {
     public class AccrualInterestTransaction : IAccrualInterestTransaction
     {
         private readonly ILogger<AccrualInterestTransaction> _logger;
-        private readonly ITransactionRepository _transactionRepository; 
+        private readonly ITransactionRepository _transactionRepository;
         private readonly IAccountRepository _accountRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IExecutionStrategyRunner _exRunner;
+
         public AccrualInterestTransaction(
             ILogger<AccrualInterestTransaction> logger,
             ITransactionRepository transactionRepository,
             IAccountRepository accountRepository,
-            IUserRepository userRepository,
+            IUnitOfWork unitOfWork,
             IExecutionStrategyRunner exRunner)
         {
             _logger = logger;
             _transactionRepository = transactionRepository;
             _accountRepository = accountRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _exRunner = exRunner;
         }
+
         public async Task ExecuteAccrualInterest(Account account, decimal rate)
         {
+            decimal balance = account.Balance;
+            Guid accountId = account.Id;
             await _exRunner.ExecuteAsync(async () =>
             {
                 using var transaction = await _transactionRepository.BeginTransactionAsync();
                 try
                 {
-                    decimal interest = Math.Round(account.Balance * rate, 2, MidpointRounding.AwayFromZero);
+                    decimal interest = Math.Round(balance * rate, 2, MidpointRounding.AwayFromZero);
                     bool canDeposit = await IsDayForAccrualInterestDeposit(account);
                     decimal totalAccruedInterest = 0m;
                     if (account is SavingAccount savingAccount)
@@ -47,14 +53,14 @@ namespace Application.Services.TransactionServices.SavingAccountCreation
                     InterestAccrualHistory interestAccrualHistory = new InterestAccrualHistory
                     {
                         Id = Guid.NewGuid(),
-                        AccountId = account.Id,
+                        AccountId = accountId,
                         AccrualDate = DateOnly.FromDateTime(DateTime.UtcNow),
                         AmountAccruedToday = interest,
                         AmountAccruedApplied = canDeposit ? totalAccruedInterest : 0m,
                         CreatedAt = DateTime.UtcNow
                     };
-                    await _transactionRepository.AddAccrualInterestHistory(interestAccrualHistory);
-                    await _userRepository.SaveChangesAsync();
+                    await _unitOfWork.AddItem(interestAccrualHistory);
+                    await _unitOfWork.SaveChangesAsync();
                     await transaction.CommitAsync();
                     _logger.LogInformation("Accrued {Interest} interest to account {AccountId}", interest, account.Id);
                 }

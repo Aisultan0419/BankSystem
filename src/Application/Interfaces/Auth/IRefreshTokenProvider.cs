@@ -10,6 +10,6 @@ namespace Application.Interfaces.Auth
     public interface IRefreshTokenProvider
     {
         Task<RefreshToken> GenerateRefreshToken(Guid userId);
-        string RefreshTokenHasher(string Token);
+        string RefreshTokenHasher(string token);
     }
 }

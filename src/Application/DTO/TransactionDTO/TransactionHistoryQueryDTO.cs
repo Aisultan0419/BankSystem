@@ -1,9 +1,9 @@
 ﻿namespace Application.DTO.TransactionDTO
 {
     public record TransactionHistoryQueryDTO(
-    DateOnly? startDate,
-    DateOnly? endDate,
-    int? pageNumber,
-    int? pageSize
+    DateOnly? StartDate,
+    DateOnly? EndDate,
+    int? PageNumber,
+    int? PageSize
     );
 }

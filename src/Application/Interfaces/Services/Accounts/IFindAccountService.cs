@@ -3,6 +3,6 @@ namespace Application.Interfaces.Services.Accounts
 {
     public interface IFindAccountService
     {
-        Task<AccountLookupResult> findAccount(string appUserId, string lastNumbers);
+        Task<AccountLookupResult> FindAccountMethod(string appUserId, string lastNumbers);
     }
 }

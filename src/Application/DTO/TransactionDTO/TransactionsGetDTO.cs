@@ -1,5 +1,4 @@
-﻿using Domain.Models;
-
+﻿
 namespace Application.DTO.TransactionDTO
 {
     public record TransactionsGetDTO(
@@ -9,7 +8,7 @@ namespace Application.DTO.TransactionDTO
     string Currency = "KZT",
     DateTime CreatedAt = default,
     string Type = ""
-)
+    )
     {
         public TransactionsGetDTO() : this(null, null, 0m, "KZT", DateTime.UtcNow, "") { }
     }

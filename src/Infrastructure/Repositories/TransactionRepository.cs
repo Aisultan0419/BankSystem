@@ -29,32 +29,28 @@ namespace Infrastructure.Repositories
                 return _dbContext.Database.CreateExecutionStrategy();
             }
 
-            public async Task AddTransaction(Transaction transaction)
-            {
-                await _dbContext.Transactions.AddAsync(transaction);
-            }
             public async Task<List<TransactionsGetDTO>> GetTransactions(Client client, TransactionHistoryQueryDTO thqDTO)
             {
                 var query = _dbContext.Transactions
                 .AsNoTracking()
                 .Where(t => t.ClientId == client.Id);
-            if (thqDTO.startDate.HasValue)
+            if (thqDTO.StartDate.HasValue)
             {
-                var start = DateTime.SpecifyKind(thqDTO.startDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                var start = DateTime.SpecifyKind(thqDTO.StartDate.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
                 query = query.Where(t => t.CreatedAt >= start);
             }
 
-            if (thqDTO.endDate.HasValue)
+            if (thqDTO.EndDate.HasValue)
             {
-                var exclusiveEnd = DateTime.SpecifyKind(thqDTO.endDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                var exclusiveEnd = DateTime.SpecifyKind(thqDTO.EndDate.Value.AddDays(1).ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
                 query = query.Where(t => t.CreatedAt < exclusiveEnd);
             }
 
-            if (thqDTO.pageNumber.HasValue && thqDTO.pageSize.HasValue)
+            if (thqDTO.PageNumber.HasValue && thqDTO.PageSize.HasValue)
                 {
                     query = query
-                    .Skip((thqDTO.pageNumber.Value - 1) * thqDTO.pageSize.Value)
-                    .Take(thqDTO.pageSize.Value);
+                    .Skip((thqDTO.PageNumber.Value - 1) * thqDTO.PageSize.Value)
+                    .Take(thqDTO.PageSize.Value);
                 }
                 var result = await query
                 .Select(t => new TransactionsGetDTO
@@ -68,10 +64,7 @@ namespace Infrastructure.Repositories
                 .ToListAsync();
                 return result;
             }
-            public async Task AddOutbox(Outbox outBox)
-            {
-                await _dbContext.OutBoxes.AddAsync(outBox);
-            }
+
             public async Task<bool> CheckMessageForIdempotency(Guid corId)
             {
                 var res = await _dbContext.SavingsAccounts.AnyAsync(a => a.CorrelationId == corId);
@@ -85,10 +78,7 @@ namespace Infrastructure.Repositories
                                 .FirstOrDefaultAsync();
                 return currentAccount!;
             }
-            public async Task AddAccrualInterestHistory(InterestAccrualHistory interestAccrualHistory)
-            {
-                await _dbContext.InterestAccrualHistory.AddAsync(interestAccrualHistory);
-            }
+
             public bool IsUniqueViolationCheck(DbUpdateException ex)
             {
                 if (ex.InnerException is PostgresException pgEx)

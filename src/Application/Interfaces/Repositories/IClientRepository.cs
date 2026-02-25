@@ -9,9 +9,8 @@ namespace Application.Interfaces.Repositories
 {
     public interface IClientRepository
     {
-        Task<bool> ExistsByIINAsync(string iin);
-        Task SaveDataClientAsync(Client client);
-        Task<int> DeleteAsync(string IIN);
-        Task<Client?> FindByIINAsync(string IIN);
+        Task<bool> ExistsByIinAsync(string iin);
+        Task<int> DeleteAsync(string iin);
+        Task<Client?> FindByIinAsync(string iin);
     }
 }

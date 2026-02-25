@@ -30,6 +30,7 @@
             get => TransferredLastDayMoney?.Amount;
             set => TransferredLastDayMoney = value.HasValue ? new Money(value.Value, Currency ?? "KZT") : null;
         }
+        public virtual void ResetLimit(DateOnly kazToday) { }
         public abstract void Deposit(decimal amount);
         public abstract void TransferOut(decimal amount);
     }

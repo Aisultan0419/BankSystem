@@ -13,10 +13,6 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        public async Task SaveDataAppUserAsync(AppUser appUser)
-        {
-            await _context.AppUsers.AddAsync(appUser);
-        }
         public async Task<AppUser> GetAppUserAsync(Guid Id)
         {
             var result = await _context.AppUsers.AsNoTracking()

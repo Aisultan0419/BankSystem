@@ -1,7 +1,4 @@
-﻿using System.Data;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Application.DTO.CardDTO;
+﻿using Application.DTO.CardDTO;
 using Application.Interfaces.Services;
 using Application.Interfaces.Services.Cards;
 using Microsoft.AspNetCore.Authorization;
@@ -26,43 +23,29 @@ namespace BankSystemAPI.Controllers
         public async Task<ActionResult<IEnumerable<GetCardDTO>>> GetAllCards()
         {
             _logger.LogInformation("GetAllCards endpoint has started...");
-            _logger.LogInformation("Fetching all cards for the authenticated user.");
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return Unauthorized("No token or not authenticated");
-            _logger.LogInformation("User is authenticated.");
-            _logger.LogInformation("Attempt to get id of user...");
-            var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             _logger.LogInformation("Attempt to get all cards of user...");
-            var cards = await _getCardService.GetAllCards(appUserIdClaim ?? throw new Exception("NoId"));
-            if (cards != null)
+            var result = await _getCardService.GetAllCards();
+            if (result.IsSuccess is true)
             {
-                _logger.LogInformation("Cards retrieved successfully.");
-                return Ok(cards);
+                _logger.LogInformation(result.Message);
+                return Ok(result.Data);
             }
-            _logger.LogWarning("No cards found for the user.");
-            return NotFound();
+            _logger.LogWarning(result.Message);
+            return NotFound(result.Error);
         }
         [Authorize]
         [HttpGet("cards-requisites")]
         public async Task<ActionResult<CardRequisitesDTO>> GetRequisites([FromQuery] LastNumbersDTO lastNumbersDTO)
         {
             _logger.LogInformation("GetRequisites endpoint has started...");
-            _logger.LogInformation("Fetching card requisites for the authenticated user.");
-            if (User?.Identity == null || !User.Identity.IsAuthenticated)
-                return Unauthorized("No token or not authenticated");
-
-            var appUserIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                                  ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            var card = await _getRequisitesOfCardService.GetRequisitesOfCard(appUserIdClaim ?? throw new Exception("AppUser id is not here"), lastNumbersDTO.LastNumbers);
-            if (card == null)
+            var result = await _getRequisitesOfCardService.GetRequisitesOfCard(lastNumbersDTO.LastNumbers);
+            if (result.IsSuccess is false)
             {
-                _logger.LogWarning("Card not found with the provided last numbers.");
-                return NotFound("Card was not found");
+                _logger.LogWarning(result.Message);
+                return NotFound(result.Error);
             }
-            _logger.LogInformation("Card requisites retrieved successfully.");
-            return Ok(card);
+            _logger.LogInformation(result.Message);
+            return Ok(result.Data);
         }
     }
 }

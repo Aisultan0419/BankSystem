@@ -15,21 +15,10 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        public async Task AddEncyptedPan(Pan pan)
+
+        public async Task<IEnumerable<GetCardDTO>?> GetAllCards(Guid clientId)
         {
-            await _context.Pans.AddAsync(pan);
-        }
-        public async Task AddCard(Card card)
-        {
-            await _context.Cards.AddAsync(card);
-        }
-        public async Task AddAccount(CurrentAccount account)
-        {
-            await _context.CurrentAccounts.AddAsync(account);
-        }
-        public async Task<IEnumerable<GetCardDTO>> GetAllCards(Guid clientId)
-        {
-            var list = await _context.Accounts
+            IEnumerable<GetCardDTO>? list = await _context.Accounts
             .AsNoTracking()
             .Where(a => a.ClientId == clientId)
             .SelectMany(a => a.Cards.Select(card => new GetCardDTO(
@@ -66,10 +55,6 @@ namespace Infrastructure.Repositories
             var account = await _context.Accounts.Include(c => c.Client).FirstOrDefaultAsync(a => a.Iban == iban);
             return account ?? throw new ArgumentNullException();
         }
-        public async Task AddSavingAccount(SavingAccount savingAccount)
-        {
-            await _context.SavingsAccounts.AddAsync(savingAccount);
-        }
         public async Task<bool> IsDayForAccrualInterestDeposit(Account account)
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -92,6 +77,11 @@ namespace Infrastructure.Repositories
                 return false;
             }
             return true;
+        }
+        public async Task<string?> GetOrderNumber()
+        {
+            var number = await _context.Accounts.CountAsync();
+            return number.ToString("D6");
         }
     }
 }

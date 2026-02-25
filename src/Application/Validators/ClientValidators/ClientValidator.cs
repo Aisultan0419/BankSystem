@@ -7,7 +7,7 @@ namespace Application.Validators.ClientValidators
     {
         public ClientValidator()
         {
-            RuleFor(client => client.IIN).IINRule();
+            RuleFor(client => client.Iin).IINRule();
             RuleFor(client => client.FullName)
                 .NotNull().WithMessage("Full Name is required.")
                 .Matches("^[a-zA-Zа-яА-ЯёЁ\\s'-]+$").WithMessage("Full Name can only contain letters, spaces, hyphens, and apostrophes.");

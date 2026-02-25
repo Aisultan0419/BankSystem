@@ -5,38 +5,41 @@ using System.Numerics;
 using Application.Interfaces.Services.Accounts;
 namespace Application.Services.AccountServices
 {
-    public class IbanService : IIBanService
+    public class IbanService : IIbanService
     {
-        private readonly IUserRepository _userRepository;
-        public IbanService(IUserRepository userRepository)
+        private readonly IAccountRepository _accountRepository;
+        private const string countryCode = "KZ";
+        private const string bankCode = "AISS";
+
+        public IbanService(IAccountRepository accountRepository)
         {
-            _userRepository = userRepository;
+            _accountRepository = accountRepository;
         }            
+
         public async Task<string> GetIban(AccountType accountType, Guid Id)
         {
-            string unique_id = ((BigInteger.Abs(new BigInteger(Id.ToByteArray()))).ToString())[^4..];
-            string order_number = await _userRepository.GetOrderNumber() 
+            string uniqueId = ((BigInteger.Abs(new BigInteger(Id.ToByteArray()))).ToString())[^4..];
+            string orderNumber = await _accountRepository.GetOrderNumber() 
                 ?? throw new InvalidOperationException("Failed to generate account order number");
-            string account_type = ((int)accountType).ToString("D3");
-            string unique_number = string.Concat(account_type, unique_id, order_number);
+            string accountTypeFormatted = ((int)accountType).ToString("D3");
+            string uniqueNumber = string.Concat(accountTypeFormatted, uniqueId, orderNumber);
 
-            const string country_code = "KZ";
-            const string bank_code = "AISS";
+            string letters = countryCode + bankCode;
 
-            string letters = country_code + bank_code;
+            string digitalizedCode = Digitalization(letters);
 
-            string digitalized_code = Digitalization(letters);
+            string checkDigits = (98 - Mod97(string.Concat(uniqueNumber, digitalizedCode))).ToString("D2");
 
-            string checkDigits = (98 - Mod97(string.Concat(unique_number, digitalized_code))).ToString("D2");
-            
-            string iban = string.Concat(country_code, checkDigits, bank_code, unique_number);
+            string iban = string.Concat(countryCode, checkDigits, bankCode, uniqueNumber);
 
             return iban;
         }
+
         private int Mod97(string input)
         {
             string remainder = input;
             long block = 0;
+
             while (remainder.Length > 0)
             {
                 int take = Math.Min(9, remainder.Length);
@@ -44,8 +47,10 @@ namespace Application.Services.AccountServices
                 remainder = remainder.Substring(take);
                 block %= 97;
             }
+
             return (int)block;
         }
+
         private string Digitalization(string letters)
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -62,6 +67,7 @@ namespace Application.Services.AccountServices
                     stringBuilder.Append(c);
                 }
             }
+
             return stringBuilder.ToString();
         }
     }

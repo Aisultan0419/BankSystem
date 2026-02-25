@@ -34,7 +34,7 @@ namespace BankSystemAPI.Configuration.Extensions
         {
             //appuser
             services.AddScoped<IAppUserService, AppUserService>();
-
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             //auth
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
@@ -46,7 +46,7 @@ namespace BankSystemAPI.Configuration.Extensions
 
             //account
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IIBanService, IbanService>();
+            services.AddScoped<IIbanService, IbanService>();
             services.AddScoped<IFindAccountService, FindAccount>();
             services.AddScoped<ISavingAccountCreationTransaction, SavingAccountCreationTransaction>();
             services.AddScoped<ISavingAccountService, SavingAccountService>();
@@ -62,7 +62,6 @@ namespace BankSystemAPI.Configuration.Extensions
             //transactions
             services.AddScoped<ITransferService, TransferService>();
             services.AddScoped<IDepositService, DepositService>();
-            services.AddScoped<IPurchaseService, PurchaseService>();
             services.AddScoped<ITransactionProcessor, TransactionProcessor>();
             services.AddScoped<ITransactionsGetService, TransactionsGetService>();
             services.AddScoped<CheckLimit>();
@@ -86,7 +85,7 @@ namespace BankSystemAPI.Configuration.Extensions
             services.AddHostedService<OutboxHostedService>();
 
             //repositories
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IAppUserRepository, AppUserRepository>();

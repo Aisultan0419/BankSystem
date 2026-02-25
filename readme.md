@@ -1,70 +1,142 @@
-# Bank system
+# Bank System
 
-This project simulates a real online banking system, featuring user registration and login, account and card creation, as well as deposit and transfer transactions. All accounts and cards are securely protected and stored.
+A backend simulation of a secure online banking system built with ASP.NET Core.  
+The project focuses on transactional integrity, security, asynchronous processing, and clean architecture principles.
 
-### Features
+---
 
-- Client and app user registration and login with PIN codes or passwords
-- Automatic generation of accounts and cards
-- Viewing card details
-- Deleting a client (only if no app user exists)
-- Depositing funds to a specific card
-- Checking transaction history
-- Transferring money to any other card
+## Overview
 
-### Installation
+This system models core banking functionality:
 
-1. Clone the repository:
+- Client registration
+- App user authentication (PIN / password)
+- Automatic account and card generation
+- Secure money transfers
+- Deposit operations
+- Transaction history
+- Savings accounts with automated interest accrual
+
+The architecture follows Onion Architecture and emphasizes security, consistency, and extensibility.
+
+---
+
+## Core Features
+
+### Authentication & Security
+- JWT authentication (HMAC-SHA256)
+- Refresh token mechanism
+- Password and PIN hashing with BCrypt
+- Brute-force protection (3 failed attempts → 3-hour lock)
+- Global exception handling
+- AES-GCM encryption for PAN storage
+- Secure refresh token hashing
+- Unique IIN validation and structural verification
+
+### Banking Logic
+- Automatic IBAN generation (Mod97 validation)
+- PAN generation (Luhn algorithm)
+- Money represented as value structures
+- Transfers between accounts
+- Deposit transactions
+- Card replacement and deletion
+- Multiple savings account types
+- Strict transaction isolation with `BeginTransactionAsync` + execution strategy
+- Outbox pattern for reliable message processing
+
+### Asynchronous Processing
+- RabbitMQ via MassTransit
+- Savings account creation through messaging
+- Automated interest accrual via Hosted Services
+- Event-driven communication
+- Outbox pattern for consistency
+
+### Infrastructure
+- PostgreSQL 17
+- Entity Framework Core
+- Dockerized deployment
+- Serilog detailed logging
+- FluentValidation
+- Swagger (OpenAPI)
+- Unit tests (xUnit)
+
+---
+
+## Installation
+
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Aisultan0419/BankSystem
 cd BankSystem
-```
-2. Make sure that you have Docker and Docker compose installed
-3. Run the project using Docker Compose
+````
+
+### 2. Ensure you have:
+
+* Docker
+* Docker Compose
+
+### 3. Run the project
+
 ```bash
 docker-compose up --build
 ```
-The application uses PostgreSQL with the following configuration:
-- Port: 5440
-- Database: BankSystem
-- User: postgres
 
+---
 
-### How to use
-All API endpoints and request examples are available via Swagger UI:
+### Database configuration
 
-First, you must register a **client**.
-Then, register an **app user** using the IIN provided during client registration to establish the connection.
+* PostgreSQL Port: 5440
+* Database: BankSystem
+* User: postgres
 
-After that, you can *log in* using either a password or a PIN code.
-Once logged in, copy the received token and paste it into the **Authorize** section at the top of the Swagger page in the following format:
+---
 
-```bash
+## How to Use
+
+1. Register a Client (requires unique IIN).
+2. Register an App User linked to that Client.
+3. Log in using PIN or password.
+4. Copy the JWT token.
+5. Open Swagger UI.
+6. Click **Authorize** and paste:
+
+```
 Bearer {your_token}
 ```
 
-### Technologies
-- C#
-- .NET 9
-- ASP.NET Core
-- PostgreSQL 17
-- Docker 
-- Swagger (OpenAPI)
-- Entity Framework Core
-- XUnit 
-- Serilog
-- FluentValidation
+You can now perform secure banking operations.
 
-### Notes and limitations
-- The project is intended for educational purposes
-- No real banking data is used
+---
 
-### Project Status
+## Architecture
 
-This project is actively developed as a learning and portfolio project.
+* Onion Architecture
+* Separation of concerns
+* Application / Domain / Infrastructure layers
+* DTO pattern
+* Dependency Injection
+* Value Objects for financial precision
+* Transaction-safe service design
 
-### Author
+---
+
+## Security Considerations
+
+This project simulates production-grade security patterns:
+
+* No plaintext sensitive data stored
+* Encrypted PAN storage
+* Hashed passwords and PINs
+* Token-based authentication with refresh rotation
+* Brute-force attack mitigation
+* Strict transactional consistency
+
+---
+
+## Author
 
 Developed by Aisultan Kalibek
-GitHub: https://github.com/Aisultan0419
+GitHub: [https://github.com/Aisultan0419](https://github.com/Aisultan0419)
+
 

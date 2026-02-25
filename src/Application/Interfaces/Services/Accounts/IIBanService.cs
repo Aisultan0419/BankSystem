@@ -7,8 +7,8 @@ using Domain.Enums;
 
 namespace Application.Interfaces.Services.Accounts
 {
-    public interface IIBanService
+    public interface IIbanService
     {
-        Task<string> GetIban(AccountType accountType, Guid Id);
+        Task<string> GetIban(AccountType accountType, Guid id);
     }
 }

@@ -1,5 +1,5 @@
 ﻿
 namespace Application.DTO.ClientDTO
 {
-    public record IINDTO(string IIN);
+    public record IinDTO(string Iin);
 }

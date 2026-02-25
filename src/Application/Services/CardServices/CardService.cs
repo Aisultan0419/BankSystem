@@ -1,6 +1,5 @@
 ﻿using Domain.Models;
 using Domain.Enums;
-using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Cards;
 using Application.Interfaces.Services.Pans;
 namespace Application.Services.CardServices
@@ -9,23 +8,18 @@ namespace Application.Services.CardServices
     {
         private readonly IPanService _panService;
         private readonly IPanEncryptor _panEncryptor;
-        private readonly IAccountRepository _accountRepository;
-        private readonly IUserRepository _userRepository;
         public CardService(IPanService panService
-            ,IPanEncryptor panEncryptor
-            ,IAccountRepository accountRepository
-            ,IUserRepository userRepository)
+            ,IPanEncryptor panEncryptor)
         {
             _panService = panService;
             _panEncryptor = panEncryptor;
-            _accountRepository = accountRepository;
-            _userRepository = userRepository;
         }
         public Card CreateCard(Client client)
         {
             var pan = _panService.CreatePan(client);
             var encrypted = _panEncryptor.Encrypt(pan);
-            var encypted_pan = new Pan
+
+            var encrypted_pan = new Pan
             {
                 Id = Guid.NewGuid(),
                 CipherText = encrypted.CipherText,
@@ -39,9 +33,9 @@ namespace Application.Services.CardServices
                 ExpiryDate = (DateTime.UtcNow.AddYears(3)).ToString("MM/yy"),
                 Status = CardStatus.Active,
                 PanMasked = new string('*', 12) + pan[^4..],
-                Pan = encypted_pan
+                Pan = encrypted_pan
             };
-            encypted_pan.Card = card;
+            encrypted_pan.Card = card;
             return card;
         }
 

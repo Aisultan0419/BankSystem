@@ -13,17 +13,17 @@ namespace Infrastructure.MessageBroker
     {
         private readonly AppDbContext _db;
         private readonly IPublishEndpoint _bus;
-        private readonly IUserRepository _userRep;
         private readonly ILogger<OutboxPublisher> _logger;
+        private readonly IUnitOfWork _unitOfWork;
         public OutboxPublisher(AppDbContext db
             , IPublishEndpoint bus
-            , IUserRepository userRep
-            , ILogger<OutboxPublisher> logger)
+            , ILogger<OutboxPublisher> logger,
+            IUnitOfWork unitOfWork)
         {
             _db = db;
             _bus = bus;
-            _userRep = userRep;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
         public async Task PublishPendingMessageAsync(int limit, CancellationToken ct)
         {
@@ -60,7 +60,7 @@ namespace Infrastructure.MessageBroker
                     _logger.LogWarning("Failed to publish outbox message {MessageId}. Retry count increased to {RetryCount}.", msg.Id, msg.RetryCount);
                 }
             }
-            await _userRep.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

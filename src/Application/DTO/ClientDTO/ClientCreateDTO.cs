@@ -4,7 +4,7 @@ using Domain.Models;
 namespace Application.DTO.ClientDTO
 {
     public record ClientCreateDTO(
-    string IIN,
+    string Iin,
     string FullName,
     string? PhoneNumber
 );

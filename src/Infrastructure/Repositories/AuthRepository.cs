@@ -18,10 +18,7 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        public async Task SaveRefreshToken(RefreshToken refreshToken)
-        {
-            await _context.RefreshTokens.AddAsync(refreshToken);
-        }
+
         public async Task<RefreshToken?> FindRefreshToken(string refreshToken)
         {
             var result = await _context.RefreshTokens.AsNoTracking().Include(rt => rt.AppUser).FirstOrDefaultAsync(token => token.Token == refreshToken);

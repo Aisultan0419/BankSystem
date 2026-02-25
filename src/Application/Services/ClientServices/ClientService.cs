@@ -9,33 +9,36 @@ namespace Application.Services.ClientServices
 {
     public class ClientService : IClientService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IClientRepository _clientRepository;
         private readonly IAccountService _accountService;
         private readonly IAccountRepository _accountRepository;
-        public ClientService(IUserRepository userRepository
-            ,IClientRepository clientRepository
-            ,IAccountService accountService
-            ,IAccountRepository accountRepository)
+
+        public ClientService(
+            IUnitOfWork unitOfWork,
+            IClientRepository clientRepository,
+            IAccountService accountService,
+            IAccountRepository accountRepository)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _clientRepository = clientRepository;
             _accountService = accountService;
             _accountRepository = accountRepository;
         }
+
         public async Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO)
         {
             var client = new Client
             {
                 Id = Guid.NewGuid(),
-                IIN = ClientDTO.IIN,
+                IIN = ClientDTO.Iin,
                 KycStatus = KycStatus.Pending,
                 FullName = ClientDTO.FullName,
                 IsDeleted = false,
                 PhoneNumber = ClientDTO.PhoneNumber
             };
             
-            var exists = await _clientRepository.ExistsByIINAsync(client.IIN!);
+            var exists = await _clientRepository.ExistsByIinAsync(client.IIN!);
 
             if (exists) return new RegistrationStatusDTO
             {
@@ -43,17 +46,18 @@ namespace Application.Services.ClientServices
                 Message = "Client data is already in the system!"
             };
             client.KycStatus = KycStatus.Verified;
-            await _clientRepository.SaveDataClientAsync(client);
+            await _unitOfWork.AddItem(client);
 
             var account = await _accountService.CreateAccount(client);
-            await _accountRepository.AddAccount(account);
-            await _userRepository.SaveChangesAsync();
+            await _unitOfWork.AddItem(account);
+            await _unitOfWork.SaveChangesAsync();
             return new RegistrationStatusDTO()
             {
                 KycStatus = KycStatus.Verified.ToString(),
                 Message = "Client successfully has been saved"
             };
         }
+
         public async Task<bool> DeleteClient(string IIN)
         {
             var affected = await _clientRepository.DeleteAsync(IIN);

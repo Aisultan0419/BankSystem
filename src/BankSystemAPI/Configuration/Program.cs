@@ -18,10 +18,9 @@ app.UseApiSwagger();
 app.UseMiddlewares();
 app.UseGlobalExceptionHandler();
 app.MapControllers();
-if (app.Environment.IsEnvironment("Docker"))
-{
-    await app.ApplyDatabaseMigrations();
-}
+
+await app.ApplyDatabaseMigrations();
+
 app.MapGet("/", ctx => { ctx.Response.Redirect("/swagger"); return Task.CompletedTask; });
 
 

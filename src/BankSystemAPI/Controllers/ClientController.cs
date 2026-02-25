@@ -31,19 +31,19 @@ namespace BankSystemAPI.Controllers
             return CreatedAtAction(null, result);
         }
         [HttpDelete("{iin}")]
-        public async Task<IActionResult> Delete([FromQuery] IINDTO iinDTO)
+        public async Task<IActionResult> Delete([FromQuery] IinDTO iinDTO)
         {
             _logger.LogInformation("Delete endpoint has started...");
-            _logger.LogInformation("Attempting to delete client with IIN: {iin}", iinDTO.IIN);
-            bool result = await _clientService.DeleteClient(iinDTO.IIN);
+            _logger.LogInformation("Attempting to delete client with IIN: {iin}", iinDTO.Iin);
+            bool result = await _clientService.DeleteClient(iinDTO.Iin);
             if (result == false)
             {
-                _logger.LogWarning("Client with IIN: {iin} was not found", iinDTO.IIN);
+                _logger.LogWarning("Client with IIN: {iin} was not found", iinDTO.Iin);
                 return NotFound("Client was not found");
             }
             else
             {
-                _logger.LogInformation("Client with IIN: {iin} deleted successfully", iinDTO.IIN);
+                _logger.LogInformation("Client with IIN: {iin} deleted successfully", iinDTO.Iin);
                 return NoContent();
             }
         }

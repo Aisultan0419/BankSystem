@@ -9,16 +9,16 @@ namespace Application.Services.TransactionServices
     public class TransactionProcessor : ITransactionProcessor
     {
         private readonly ITransactionRepository _transactionRepository;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private static readonly TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Almaty");
         private DateTime KazNow => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
         private DateOnly KazToday => DateOnly.FromDateTime(KazNow);
         public TransactionProcessor(
             ITransactionRepository transactionRepository,
-            IUserRepository userRepository)
+            IUnitOfWork unitOfWork)
         {
             _transactionRepository = transactionRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task ProcessTransferAsync(AppUser appUser, Account fromAccount, Account toAccount, decimal amount)
@@ -48,8 +48,8 @@ namespace Application.Services.TransactionServices
                             Type = "Transfer"
                         };
 
-                        await _transactionRepository.AddTransaction(transaction);
-                        await _userRepository.SaveChangesAsync();
+                        await _unitOfWork.AddItem(transaction);
+                        await _unitOfWork.SaveChangesAsync();
 
                         await tx.CommitAsync();
                     }

@@ -13,5 +13,10 @@ namespace Domain.Models.Accounts
             var m = new Money(amount, Currency ?? "KZT");
             _balance -= m;
         }
+        public override void ResetLimit(DateOnly kazToday)
+        {
+            this.TransferredLastDay = 0m;
+            this.LastTransferDateKz = kazToday;
+        }
     }
 }

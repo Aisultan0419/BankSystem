@@ -3,11 +3,11 @@ using Application.Validators.CustomValidation;
 using Application.DTO.ClientDTO;
 namespace Application.Validators.ClientValidators
 {
-    public class IINValidator : AbstractValidator<IINDTO>
+    public class IINValidator : AbstractValidator<IinDTO>
     {
         public IINValidator()
         {
-            RuleFor(c => c.IIN).IINRule();
+            RuleFor(c => c.Iin).IINRule();
         }
     }
 }

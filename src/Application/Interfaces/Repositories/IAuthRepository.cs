@@ -9,7 +9,6 @@ namespace Application.Interfaces.Repositories
 {
     public interface IAuthRepository
     {
-        Task SaveRefreshToken(RefreshToken refreshToken);
         Task<RefreshToken?> FindRefreshToken(string refreshToken);
     }
 }

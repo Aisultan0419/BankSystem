@@ -5,7 +5,6 @@ using Application.Interfaces.Services.Transactions;
 using Application.MessageContracts;
 using Application.Responses;
 using Domain.Enums;
-using Domain.Models;
 using Domain.Models.Accounts;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +17,7 @@ namespace Application.Services.TransactionServices.SavingAccountCreation
         private readonly ITransactionRepository _trRepository;
         private readonly IClock _clock;
         private readonly IAddingOutboxTransaction _addOutboxTransaction;
-        private readonly IIBanService _iBanService;
+        private readonly IIbanService _iBanService;
         private readonly ILogger<SavingAccountService> _logger;
         private readonly ISavingAccountCreationTransaction _savAccountTransaction;
         private readonly ITransactionProcessor _transactionProcessor;
@@ -26,7 +25,7 @@ namespace Application.Services.TransactionServices.SavingAccountCreation
             ,ITransactionRepository trRepository
             ,IClock clock
             ,IAddingOutboxTransaction addOutboxTransaction
-            ,IIBanService iBanService
+            ,IIbanService iBanService
             ,ILogger<SavingAccountService> logger
             ,ISavingAccountCreationTransaction savAccountTransaction
             ,ITransactionProcessor transactionProcessor)
@@ -79,10 +78,8 @@ namespace Application.Services.TransactionServices.SavingAccountCreation
                     CorrelationId = corId
                 }
             };
-
         }
         
-
         public async Task CreateSavingAccount(TransactionRequested message)
         {
             var existingMessage = await _trRepository.CheckMessageForIdempotency(message.CorrelationId);

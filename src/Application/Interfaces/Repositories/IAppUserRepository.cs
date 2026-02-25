@@ -7,7 +7,6 @@ namespace Application.Interfaces.Repositories
     {
         Task<bool> ExistsByEmailAsync(string email);
         Task<AppUser?> GetAppUserByEmail(string email);
-        Task<AppUser> GetAppUserAsync(Guid Id);
-        Task SaveDataAppUserAsync(AppUser appUser);
+        Task<AppUser> GetAppUserAsync(Guid id);
     }
 }

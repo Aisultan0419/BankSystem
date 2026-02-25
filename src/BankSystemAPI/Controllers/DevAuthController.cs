@@ -28,7 +28,7 @@ namespace BankSystemAPI.Controllers
             var email = "ais@gmail.com";
             var pin = "0185";
 
-            var result = await _authService.LoginPin(email, pin);
+            var result = await _authService.LoginProcess(email, pin);
             if (result.VerificationStatus != VerificationStatus.Verified.ToString())
                 return BadRequest(result);
 

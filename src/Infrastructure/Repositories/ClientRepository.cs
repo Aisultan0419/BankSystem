@@ -13,20 +13,17 @@ namespace Infrastructure.Repositories
         {
             _context = context;
         }
-        public async Task<bool> ExistsByIINAsync(string iin)
+        public async Task<bool> ExistsByIinAsync(string iin)
         {
             bool exists = await _context.Clients.AnyAsync(client => client.IIN == iin);
             return exists;
         }
-        public async Task<Client?> FindByIINAsync(string iin)
+        public async Task<Client?> FindByIinAsync(string iin)
         {
             Client? client = await _context.Clients.FirstOrDefaultAsync(client => client.IIN == iin);
             return client;
         }
-        public async Task SaveDataClientAsync(Client client)
-        {
-            await _context.Clients.AddAsync(client);
-        }
+
         public async Task<int> DeleteAsync(string IIN)
         {
             int affected = await _context.Clients

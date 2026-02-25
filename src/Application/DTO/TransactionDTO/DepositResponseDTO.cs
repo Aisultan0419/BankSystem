@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Application.DTO.TransactionDTO
 {
     public class DepositResponseDTO {
-        public decimal? depositedAmount { get; set; } 
-        public string? message { get; set; }
-        public decimal? newBalance { get; set; } 
+        public decimal? DepositedAmount { get; set; } 
+        public string? Message { get; set; }
+        public decimal? NewBalance { get; set; } 
     }
 }

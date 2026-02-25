@@ -9,24 +9,27 @@ namespace Application.Services.AppUserServices
 {
     public class AppUserService : IAppUserService
     {
-       
-        private readonly IUserRepository _userRepository;
+
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IAppUserRepository _appUserRepository;
         private readonly IHasher _Hasher;
         private readonly IClientRepository _clientRepository;
-        public AppUserService(IUserRepository userRepository
-            ,IHasher Hasher
-            ,IAppUserRepository appUserRepository
-            ,IClientRepository clientRepository)
+
+        public AppUserService(
+            IUnitOfWork unitOfWork,
+            IHasher Hasher,
+            IAppUserRepository appUserRepository,
+            IClientRepository clientRepository)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _Hasher = Hasher;
             _appUserRepository = appUserRepository;
             _clientRepository = clientRepository;
         }
+
         public async Task<RegistrationStatusDTO> RegisterAppUser(AppUserCreateDTO AppUserDTO)
         {
-            var client = await _clientRepository.FindByIINAsync(AppUserDTO.IIN);
+            var client = await _clientRepository.FindByIinAsync(AppUserDTO.Iin);
             if (client == null)
             {
                 return new RegistrationStatusDTO
@@ -36,6 +39,7 @@ namespace Application.Services.AppUserServices
                     Message = "There is no such client to connect"
                 };
             }
+
             var appUser = new AppUser
             {
                 Id = Guid.NewGuid(),
@@ -59,10 +63,10 @@ namespace Application.Services.AppUserServices
             appUser.VerificationStatus = VerificationStatus.Verified;
             appUser.IsActive = true;
 
-            await _appUserRepository.SaveDataAppUserAsync(appUser);
+            await _unitOfWork.AddItem(appUser);
 
-            await _userRepository.SaveChangesAsync();
-            
+            await _unitOfWork.SaveChangesAsync();
+
             return new RegistrationStatusDTO
             {
                 KycStatus = KycStatus.Verified.ToString(),

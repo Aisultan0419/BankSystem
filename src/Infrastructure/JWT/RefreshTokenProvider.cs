@@ -17,18 +17,18 @@ namespace Infrastructure.JWT
         private readonly IConfiguration _configuration;
         private readonly RefreshTokenOptions _options;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserRepository _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IAppUserRepository _appUserRepository;
         public RefreshTokenProvider(IConfiguration configuration
             ,IOptions<RefreshTokenOptions> options
             ,IHttpContextAccessor httpContextAccessor
-            ,IUserRepository userRepository
-            ,IAppUserRepository appUserRepository)
+            ,IUnitOfWork unitOfWork
+            , IAppUserRepository appUserRepository)
         {
             _configuration = configuration;
             _options = options.Value;
             _httpContextAccessor = httpContextAccessor;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _appUserRepository = appUserRepository;
         }
         public async Task<RefreshToken> GenerateRefreshToken(Guid userId)

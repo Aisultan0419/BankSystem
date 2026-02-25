@@ -10,6 +10,6 @@ namespace Application.Interfaces.Services.Transactions
 {
     public interface IDepositService
     {
-        Task<DepositResponseDTO> DepositAsync(decimal amount, string appUserId, string lastNumbers);
+        Task<DepositResponseDTO> DepositAsync(decimal amount, string lastNumbers);
     }
 }

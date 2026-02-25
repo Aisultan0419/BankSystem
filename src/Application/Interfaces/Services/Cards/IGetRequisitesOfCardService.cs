@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Application.DTO.CardDTO;
+using Application.Responses;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.DTO.CardDTO;
 
 namespace Application.Interfaces.Services.Cards
 {
     public interface IGetRequisitesOfCardService
     {
-        Task<CardRequisitesDTO> GetRequisitesOfCard(string appUserId, string last_numbers);
+        Task<ApiResponse<CardRequisitesDTO>> GetRequisitesOfCard(string last_numbers);
     }
 }

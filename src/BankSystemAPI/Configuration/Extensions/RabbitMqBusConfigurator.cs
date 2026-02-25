@@ -2,7 +2,6 @@
 using Infrastructure.MessageBroker;
 using Infrastructure.SavingAccountCreation;
 using MassTransit;
-using MassTransit.Transports.Fabric;
 namespace BankSystemAPI.Configuration.Extensions
 {
     public static class RabbitMqBusConfigurator 

@@ -22,7 +22,7 @@ namespace BankSystemAPI.Controllers
         {
             _logger.LogInformation("LoginViaPin endpoint has started...");
             _logger.LogInformation("App-user attempting to log in via PIN... {email}", loginViaPinDTO.Email);
-            var result = await _authService.LoginPin(loginViaPinDTO.Email!, loginViaPinDTO.PinCode);
+            var result = await _authService.LoginProcess(loginViaPinDTO.Email!, loginViaPinDTO.PinCode);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
             {
                 _logger.LogWarning("App-user {email} could not log in via PIN - {info}", loginViaPinDTO.Email, result.Message);
@@ -43,7 +43,7 @@ namespace BankSystemAPI.Controllers
         {
             _logger.LogInformation("LoginViaPassword endpoint has started...");
             _logger.LogInformation("App-user attempting to log in via Password... {email}", loginViaPasswordDTO.Email);
-            var result = await _authService.LoginPassword(loginViaPasswordDTO.Email!, loginViaPasswordDTO.Password);
+            var result = await _authService.LoginProcess(loginViaPasswordDTO.Email!, loginViaPasswordDTO.Password);
             if (result.VerificationStatus == VerificationStatus.Rejected.ToString())
             {
                 _logger.LogWarning("App-user {email} could not log in via Password - {info}", loginViaPasswordDTO.Email, result.Message);

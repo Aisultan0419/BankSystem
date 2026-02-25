@@ -1,35 +1,36 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Accounts;
+using Application.Interfaces.Services.AppUsers;
 using Application.Interfaces.Services.Transactions;
-using Domain.Models;
-using System.Runtime.CompilerServices;
 namespace Application.Services.TransactionServices
 {
     public class TransferService : ITransferService
     {
-        private readonly IAppUserRepository _appUserRepository;
+        private readonly ICurrentUserService _currentUserService;
         private readonly IAccountRepository _accountRepository;
         private readonly ITransactionProcessor _transactionProcessor;
         private readonly CheckLimit _checkLimit;
         private readonly IFindAccountService _findAccountService;
-        public TransferService(IAppUserRepository appUserRepository
-            ,IAccountRepository accountRepository
+        public TransferService(
+             IAccountRepository accountRepository
             ,CheckLimit checkLimit
             ,ITransactionProcessor transactionProcessor
-            ,IFindAccountService findAccountService)
+            ,IFindAccountService findAccountService
+            ,ICurrentUserService currentUserService)
         {
-            _appUserRepository = appUserRepository;
             _accountRepository = accountRepository;
             _checkLimit = checkLimit;
             _transactionProcessor = transactionProcessor;
             _findAccountService = findAccountService;
+            _currentUserService = currentUserService;
         }
-        public async Task<TransferResponseDTO> TransferAsync(string appUserId, string iban, decimal amount, string lastNumbers)
+        public async Task<TransferResponseDTO> TransferAsync(string iban, decimal amount, string lastNumbers)
         {
-            var lookup = await _findAccountService.findAccount(appUserId, lastNumbers);
+            var appUserId = _currentUserService.GetUserId();
+            var lookup = await _findAccountService.FindAccountMethod(appUserId.ToString(), lastNumbers);
             if (!lookup.Success)
-                return new TransferResponseDTO { message = lookup.ErrorMessage };
+                return new TransferResponseDTO { Message = lookup.ErrorMessage };
 
             var fromAccount = lookup.Account!;
             var appUser = lookup.AppUser!;
@@ -37,15 +38,15 @@ namespace Application.Services.TransactionServices
             {
                 return new TransferResponseDTO
                 {
-                    message = "Insufficient funds"
+                    Message = "Insufficient funds"
                 };
             }
-            var resultOfCheck = _checkLimit.checkLimit(fromAccount, amount);
+            var resultOfCheck = _checkLimit.CheckDailyTransferLimit(fromAccount, amount);
             if (resultOfCheck.Item1 == false)
             {
                 return new TransferResponseDTO
                 {
-                    message = $"You can transfer only {resultOfCheck.Item2} for today"
+                    Message = $"You can transfer only {resultOfCheck.Item2} for today"
                 };
             }
             
@@ -54,16 +55,16 @@ namespace Application.Services.TransactionServices
             {
                 return new TransferResponseDTO
                 {
-                    message = "Recipient account was not found"
+                    Message = "Recipient account was not found"
                 };
             }
             await _transactionProcessor.ProcessTransferAsync(appUser, fromAccount, toAccount, amount);
 
             return new TransferResponseDTO
             {
-                Full_name = toAccount.Client.FullName,
-                transferredAmount = amount,
-                remainingBalance = fromAccount.Balance
+                FullName = toAccount.Client.FullName,
+                TransferredAmount = amount,
+                RemainingBalance = fromAccount.Balance
             };
         }
     }

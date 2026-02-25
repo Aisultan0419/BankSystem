@@ -9,6 +9,6 @@ namespace Application.Interfaces.Services.Pans
     public interface IPanEncryptor
     {
         (byte[] CipherText, byte[] Nonce, byte[] Tag) Encrypt(string pan);
-        string Decrypt(byte[] CipherText, byte[] Nonce, byte[] Tag);
+        string Decrypt(byte[] cipherText, byte[] nonce, byte[] tag);
     }
 }

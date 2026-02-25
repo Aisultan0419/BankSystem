@@ -15,7 +15,7 @@ namespace Application.Services.TransactionServices
             _appUserRepository = appUserRepository;
         }
 
-        public async Task<AccountLookupResult> findAccount(string appUserId, string lastNumbers)
+        public async Task<AccountLookupResult> FindAccountMethod(string appUserId, string lastNumbers)
         {
             if (!Guid.TryParse(appUserId, out var appUserGuid))
                 return AccountLookupResult.Fail("Invalid user id format");

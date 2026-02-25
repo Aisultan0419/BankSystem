@@ -1,5 +1,6 @@
 ﻿using Application.DTO.TransactionDTO;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Services.AppUsers;
 using Application.Interfaces.Services.Transactions;
 using Application.Responses;
 namespace Application.Services.TransactionServices
@@ -8,14 +9,18 @@ namespace Application.Services.TransactionServices
     {
         private readonly IAppUserRepository _appUserRepository;
         private readonly ITransactionRepository _transactionRepository;
-        public TransactionsGetService(IAppUserRepository appUserRepository, ITransactionRepository transactionRepository)
+        private readonly ICurrentUserService _currentUserService;
+        public TransactionsGetService(IAppUserRepository appUserRepository
+            ,ITransactionRepository transactionRepository
+            ,ICurrentUserService currentUserService)
         {
             _appUserRepository = appUserRepository; 
             _transactionRepository = transactionRepository;
+            _currentUserService = currentUserService;
         }
-        public async Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(string appUserId, TransactionHistoryQueryDTO thqDTO)
+        public async Task<ApiResponse<List<TransactionsGetDTO>>> GetAllTransactionsAsync(TransactionHistoryQueryDTO thqDTO)
         {
-            Guid.TryParse(appUserId, out var appUserGuid);
+            var appUserGuid = _currentUserService.GetUserId();
             var appUser = await _appUserRepository.GetAppUserAsync(appUserGuid);
             if (appUser == null)
             {

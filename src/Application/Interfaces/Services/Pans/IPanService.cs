@@ -10,6 +10,6 @@ namespace Application.Interfaces.Services.Pans
     public interface IPanService
     {
         string CreatePan(Client client);
-        string ControlNumber(string BIN, string card_number);
+        string ControlNumber(string bin, string cardNumber);
     }
 }

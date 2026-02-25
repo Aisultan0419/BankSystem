@@ -10,6 +10,6 @@ namespace Application.Interfaces.Services.AppUsers
 {
     public interface IAppUserService
     {
-        Task<RegistrationStatusDTO> RegisterAppUser(AppUserCreateDTO AppUserDTO);
+        Task<RegistrationStatusDTO> RegisterAppUser(AppUserCreateDTO appUserDTO);
     }
 }

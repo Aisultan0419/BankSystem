@@ -1,7 +1,5 @@
-﻿
-using Application.Interfaces.Services.Transactions;
+﻿using Application.Interfaces.Services.Transactions;
 using Infrastructure.DbContext;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace ApplicationTests.TransactionServicesTests.TransactionTests
 {

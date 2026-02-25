@@ -10,7 +10,7 @@ namespace Application.Validators.AppUserValidators
         {
             RuleFor(user => user.Email).EmailRule();
 
-            RuleFor(user => user.IIN).IINRule();
+            RuleFor(user => user.Iin).IINRule();
 
             RuleFor(user => user.PinCode).PinCodeRule();
 

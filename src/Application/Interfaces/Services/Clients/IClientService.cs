@@ -9,7 +9,7 @@ namespace Application.Interfaces.Services.Clients
 {
     public interface IClientService
     {
-        Task<RegistrationStatusDTO> Register(ClientCreateDTO ClientDTO);
-        Task<bool> DeleteClient(string IIN);
+        Task<RegistrationStatusDTO> Register(ClientCreateDTO clientDTO);
+        Task<bool> DeleteClient(string iin);
     }
 }
